@@ -75,6 +75,14 @@ class SessionStore:
             {"role": m["role"], "content": m["content"]} for m in session["messages"]
         ]
 
+    def get_existing(self, phone: str) -> dict[str, Any] | None:
+        """Return session if it exists, None otherwise (no auto-create)."""
+        return self._sessions.get(phone)
+
+    def get_all(self) -> dict[str, dict[str, Any]]:
+        """Return all sessions (for dashboard list view)."""
+        return dict(self._sessions)
+
     def clear(self, phone: str) -> None:
         self._sessions[phone] = _blank_session(phone)
         self.save(phone)

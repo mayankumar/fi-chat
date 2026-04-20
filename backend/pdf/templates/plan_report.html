@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ goal_name }} — FundsIndia Advisory</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            color: #1a1a2e;
+            font-size: 11px;
+            line-height: 1.4;
+            background: #fff;
+        }
+
+        .page {
+            width: 210mm;
+            padding: 0;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #0d7a3f 0%, #15a352 50%, #1db954 100%);
+            color: white;
+            padding: 26px 32px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .header-brand {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .header-meta {
+            margin-top: 14px;
+            display: flex;
+            gap: 24px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .meta-label {
+            font-size: 9px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Content ── */
+        .content {
+            padding: 16px 32px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #f8faf9;
+            border: 1px solid #e8f0ec;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0d7a3f;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-title .icon {
+            font-size: 16px;
+        }
+
+        /* ── SIP Strategy ── */
+        .strategy-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .strategy-col {
+            flex: 1;
+        }
+
+        .sip-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 2px 0;
+        }
+
+        .sip-subtitle {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .vs-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+        }
+
+        .vs-badge {
+            display: inline-block;
+            background: #fff3e0;
+            color: #e65100;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 20px;
+        }
+
+        /* ── Allocation Bar ── */
+        .alloc-bar {
+            display: flex;
+            height: 22px;
+            border-radius: 11px;
+            overflow: hidden;
+            margin: 8px 0 6px;
+        }
+
+        .alloc-equity {
+            background: linear-gradient(90deg, #0d7a3f, #1db954);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .alloc-debt {
+            background: linear-gradient(90deg, #1976d2, #42a5f5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .alloc-gold {
+            background: linear-gradient(90deg, #f9a825, #fdd835);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5d4037;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .alloc-legend {
+            display: flex;
+            gap: 14px;
+            margin-top: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: #555;
+        }
+
+        .legend-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        /* ── Fund Table ── */
+        .fund-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .fund-table th {
+            text-align: left;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .fund-table td {
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 10px;
+        }
+
+        .fund-table .fund-name {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .fund-table .fund-category {
+            color: #0d7a3f;
+            font-size: 9px;
+        }
+
+        .fund-table .fund-amount {
+            font-weight: 600;
+            text-align: right;
+            color: #1a1a2e;
+        }
+
+        /* ── Milestones ── */
+        .milestone-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .milestone-item {
+            flex: 1 1 45%;
+            background: white;
+            border: 1px solid #e8f0ec;
+            border-radius: 6px;
+            padding: 6px 8px;
+        }
+
+        .milestone-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #0d7a3f;
+            margin-bottom: 1px;
+        }
+
+        .milestone-detail {
+            font-size: 9px;
+            color: #666;
+        }
+
+        .milestone-detail strong {
+            color: #1a1a2e;
+        }
+
+        /* ── Insight Box ── */
+        .insight-box {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-left: 4px solid #0d7a3f;
+            border-radius: 0 6px 6px 0;
+            padding: 10px 14px;
+            margin: 10px 0;
+        }
+
+        .insight-title {
+            font-weight: 700;
+            color: #0d7a3f;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .insight-text {
+            color: #333;
+            font-size: 10px;
+        }
+
+        /* ── Bottom Section ── */
+        .bottom-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* ── CTA Section ── */
+        .cta-section {
+            background: #f8faf9;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .cta-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .cta-text {
+            color: #666;
+            font-size: 9px;
+            margin-bottom: 8px;
+        }
+
+        .cta-services {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .service-item {
+            text-align: center;
+        }
+
+        .service-icon {
+            font-size: 18px;
+            margin-bottom: 1px;
+        }
+
+        .service-label {
+            font-size: 8px;
+            color: #555;
+        }
+
+        /* ── Trust Bar ── */
+        .trust-section {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .trust-item {
+            text-align: center;
+            flex: 1 1 40%;
+        }
+
+        .trust-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0d7a3f;
+        }
+
+        .trust-label {
+            font-size: 8px;
+            color: #888;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 10px;
+            padding: 10px 32px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 7.5px;
+            line-height: 1.3;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: #0d7a3f;
+            font-size: 9px;
+            margin-bottom: 2px;
+        }
+
+        /* ── Defaults Note ── */
+        .defaults-note {
+            background: #fff8e1;
+            border-radius: 6px;
+            padding: 7px 10px;
+            margin-top: 8px;
+            font-size: 9px;
+            color: #5d4037;
+        }
+
+        .defaults-note strong {
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">FUNDSINDIA ADVISORY</div>
+            <div class="header-title">{{ goal_name }}</div>
+            <div class="header-subtitle">Your Personalized Investment Plan</div>
+
+            <div class="header-meta">
+                <div class="meta-item">
+                    <div class="meta-value">{{ target_amount }}</div>
+                    <div class="meta-label">Target</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-value">{{ future_value }}</div>
+                    <div class="meta-label">Inflation-Adj.</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-value">{{ tenure_years }} yrs</div>
+                    <div class="meta-label">Timeline</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-value">{{ risk_label }}</div>
+                    <div class="meta-label">Risk Profile</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Strategy Card — side by side -->
+            <div class="card">
+                <div class="strategy-row">
+                    <div class="strategy-col">
+                        <div class="card-title"><span class="icon">💰</span> Set-and-Forget</div>
+                        <div class="sip-subtitle">Fixed monthly SIP for {{ tenure_years }} years</div>
+                        <div class="sip-amount">{{ sip_required }}/mo</div>
+                        <div class="sip-subtitle">{{ expected_return }}/yr return ({{ risk_label }})</div>
+                    </div>
+                    <div class="vs-divider"><div class="vs-badge">VS</div></div>
+                    <div class="strategy-col">
+                        <div class="card-title"><span class="icon">🚀</span> Step-Up Strategy</div>
+                        <div class="sip-subtitle">Start low, increase {{ stepup_rate }}% yearly</div>
+                        <div class="sip-amount">{{ stepup_base }}/mo</div>
+                        <div class="sip-subtitle">Growing to {{ stepup_final }}/mo by yr {{ tenure_years }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allocation Card -->
+            <div class="card">
+                <div class="card-title"><span class="icon">📊</span> Portfolio Allocation</div>
+
+                <div class="alloc-bar">
+                    {% if equity_pct > 0 %}
+                    <div class="alloc-equity" style="width: {{ equity_pct }}%">Equity {{ equity_pct }}%</div>
+                    {% endif %}
+                    {% if debt_pct > 0 %}
+                    <div class="alloc-debt" style="width: {{ debt_pct }}%">Debt {{ debt_pct }}%</div>
+                    {% endif %}
+                    {% if gold_pct > 0 %}
+                    <div class="alloc-gold" style="width: {{ gold_pct }}%">Gold {{ gold_pct }}%</div>
+                    {% endif %}
+                </div>
+
+                <div class="alloc-legend">
+                    {% if equity_pct > 0 %}
+                    <div class="legend-item"><div class="legend-dot" style="background:#0d7a3f"></div> Equity {{ equity_pct }}%</div>
+                    {% endif %}
+                    {% if debt_pct > 0 %}
+                    <div class="legend-item"><div class="legend-dot" style="background:#1976d2"></div> Debt {{ debt_pct }}%</div>
+                    {% endif %}
+                    {% if gold_pct > 0 %}
+                    <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div> Gold {{ gold_pct }}%</div>
+                    {% endif %}
+                </div>
+
+                <!-- Fund Table -->
+                <table class="fund-table">
+                    <thead>
+                        <tr>
+                            <th>Fund</th>
+                            <th style="text-align:right">Monthly SIP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fund in funds %}
+                        <tr>
+                            <td>
+                                <div class="fund-name">{{ fund.name }}</div>
+                                <div class="fund-category">{{ fund.category }}</div>
+                            </td>
+                            <td class="fund-amount">{{ fund.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Milestones Card -->
+            <div class="card">
+                <div class="card-title"><span class="icon">🎯</span> Your Milestones</div>
+                <div class="milestone-grid">
+                    {% for m in milestones %}
+                    <div class="milestone-item">
+                        <div class="milestone-label">{{ m.label }}</div>
+                        <div class="milestone-detail"><strong>{{ m.target }}</strong> in {{ m.time }} @ {{ m.sip }}/mo</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Insight Box -->
+            <div class="insight-box">
+                <div class="insight-title">💡 Did you know?</div>
+                <div class="insight-text">
+                    Starting just 3 years earlier can reduce your monthly SIP by up to 25%.
+                    The power of compounding works best when you give it time!
+                </div>
+            </div>
+
+            <!-- CTA + Trust side by side -->
+            <div class="bottom-section">
+                <div class="cta-section">
+                    <div class="cta-title">Get Expert Guidance</div>
+                    <div class="cta-text">Our advisors can help you fine-tune this plan</div>
+                    <div class="cta-services">
+                        <div class="service-item">
+                            <div class="service-icon">🎯</div>
+                            <div class="service-label">Goal Planning</div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon">📋</div>
+                            <div class="service-label">Portfolio Review</div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon">💼</div>
+                            <div class="service-label">Investment Advice</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trust-section">
+                    <div class="trust-item">
+                        <div class="trust-value">4.6 ★</div>
+                        <div class="trust-label">Google Rating</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-value">₹2,000 Cr+</div>
+                        <div class="trust-label">AUM</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-value">15+ Years</div>
+                        <div class="trust-label">Track Record</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-value">5L+</div>
+                        <div class="trust-label">Customers</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Defaults Note -->
+            {% if defaults_used %}
+            <div class="defaults-note">
+                <strong>Note:</strong> This plan uses some default assumptions —
+                {% for d in defaults_used %}{{ d }}{% if not loop.last %}, {% endif %}{% endfor %}.
+                Chat with us to personalize further!
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-brand">FundsIndia — A Subsidiary of Uttam Financial Services Ltd.</div>
+            Mutual fund investments are subject to market risks. Read all scheme related documents carefully before investing.
+            Past performance is not indicative of future results. This is a personalized illustration, not a guaranteed return.
+            AMFI Registered Mutual Fund Distributor | ARN-0845
+        </div>
+    </div>
+</body>
+</html>

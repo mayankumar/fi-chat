@@ -1,32 +1,60 @@
-"""Talk-to-advisor handoff handler."""
+"""Talk-to-advisor handoff handler with quick-reply buttons."""
+from __future__ import annotations
+
+from backend.services.twilio_sender import TEMPLATE_TTA
 
 _RESPONSES = {
     "en": (
-        "I'll connect you with our advisory team! 📞\n\n"
-        "Here are your options:\n"
-        "1️⃣ *Call us*: 044-4032 4444 (Mon-Sat, 9AM-6PM)\n"
-        "2️⃣ *Request callback*: Our advisor will call you within 2 hours\n"
-        "3️⃣ *Email*: advisory@fundsindia.com\n\n"
-        "Reply with 1, 2, or 3 to proceed."
+        "Absolutely! 🤝 Our advisory team is here for you.\n\n"
+        "How would you like to connect?"
     ),
     "hi": (
-        "मैं आपको हमारी advisory team से जोड़ता हूँ! 📞\n\n"
-        "आपके विकल्प:\n"
-        "1️⃣ *कॉल करें*: 044-4032 4444 (सोम-शनि, सुबह 9-शाम 6)\n"
-        "2️⃣ *कॉलबैक अनुरोध*: हमारे advisor 2 घंटे में कॉल करेंगे\n"
-        "3️⃣ *ईमेल*: advisory@fundsindia.com\n\n"
-        "आगे बढ़ने के लिए 1, 2, या 3 reply करें।"
+        "बिल्कुल! 🤝 हमारी advisory team आपके लिए तैयार है।\n\n"
+        "आप कैसे connect करना चाहेंगे?"
     ),
     "hinglish": (
-        "Main aapko hamari advisory team se connect karta hoon! 📞\n\n"
-        "Aapke options:\n"
-        "1️⃣ *Call karein*: 044-4032 4444 (Mon-Sat, 9AM-6PM)\n"
-        "2️⃣ *Callback request*: Hamara advisor 2 ghante mein call karega\n"
-        "3️⃣ *Email*: advisory@fundsindia.com\n\n"
-        "Aage badhne ke liye 1, 2, ya 3 reply karein."
+        "Bilkul! 🤝 Hamari advisory team aapke liye ready hai.\n\n"
+        "Aap kaise connect karna chahenge?"
     ),
 }
 
+_CALL_RESPONSE = {
+    "en": "📞 You can reach our advisors at *044-4032 4444*\n⏰ Mon-Sat, 9AM-6PM\n\nThey'll be happy to help! 😊",
+    "hi": "📞 Humare advisors se baat karein: *044-4032 4444*\n⏰ Mon-Sat, 9AM-6PM\n\nWoh aapki madad karne ko taiyaar hain! 😊",
+    "hinglish": "📞 Humare advisors se baat karein: *044-4032 4444*\n⏰ Mon-Sat, 9AM-6PM\n\nWoh aapki madad karne ko ready hain! 😊",
+}
 
-def get_tta_response(language: str) -> str:
-    return _RESPONSES.get(language, _RESPONSES["en"])
+_CALLBACK_RESPONSE = {
+    "en": "✅ Got it! Our advisor will call you back within *2 hours* during business hours.\n\nSit tight, help is on the way! 🚀",
+    "hi": "✅ Samajh gaya! Hamara advisor aapko *2 ghante* mein call karega (business hours mein).\n\nHelp aa rahi hai! 🚀",
+    "hinglish": "✅ Done! Hamara advisor aapko *2 ghante* mein call karega (business hours mein).\n\nHelp on the way! 🚀",
+}
+
+_EMAIL_RESPONSE = {
+    "en": "✉️ Email us at *advisory@fundsindia.com*\n\nOur team typically responds within *24 hours*. 📩",
+    "hi": "✉️ Humein email karein: *advisory@fundsindia.com*\n\nHamari team *24 ghante* mein reply karti hai. 📩",
+    "hinglish": "✉️ Humein email karein: *advisory@fundsindia.com*\n\nHamari team *24 ghante* mein reply karti hai. 📩",
+}
+
+
+def get_tta_response(language: str) -> dict:
+    """Return structured response with quick-reply buttons."""
+    text = _RESPONSES.get(language, _RESPONSES["en"])
+    return {
+        "messages": [text],
+        "template_name": TEMPLATE_TTA,
+    }
+
+
+def get_tta_followup(selection: str, language: str) -> str:
+    """Handle TTA sub-selection (call/callback/email) from button tap or typed text."""
+    lang = language if language in ("en", "hi", "hinglish") else "en"
+
+    if selection in ("tta_call", "1", "call us now", "📞 call us now"):
+        return _CALL_RESPONSE[lang]
+    if selection in ("tta_callback", "2", "request callback", "🔙 request callback"):
+        return _CALLBACK_RESPONSE[lang]
+    if selection in ("tta_email", "3", "send email", "✉️ send email"):
+        return _EMAIL_RESPONSE[lang]
+
+    return _CALL_RESPONSE[lang]
