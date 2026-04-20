@@ -37,7 +37,7 @@ app = FastAPI(title="FundsIndia AI Advisory Bot", version="0.1.0")
 # CORS for dashboard
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
