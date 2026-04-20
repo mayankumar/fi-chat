@@ -60,10 +60,11 @@ async def route_intent(
         text = await handle_goal_discovery(message, history, language, session)
         return _wrap(text)
 
-    # Also route to goal discovery if user is mid-flow (collecting params, no plan yet)
+    # Route to goal discovery if user is mid-flow (collecting params)
+    # OR if a plan exists and user might be modifying it (let the handler decide)
     flow = session.get("flow_state", {})
     if flow.get("goal_collected") and not flow.get("current_plan"):
-        logger.info("Routing to GOAL DISCOVERY handler (mid-flow)")
+        logger.info("Routing to GOAL DISCOVERY handler (mid-flow, collecting)")
         text = await handle_goal_discovery(message, history, language, session)
         return _wrap(text)
 

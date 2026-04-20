@@ -299,7 +299,11 @@ async def send_file(
         await sender.send_text(to=to, text=text, media_url=media_url)
 
         # Save to conversation history
-        _store.add_message(phone, "assistant", f"[RM] 📎 Sent file: {filename}" + (f"\n{caption}" if caption.strip() else ""))
+        _store.add_message(
+            phone, "assistant",
+            f"[RM] 📎 {filename}" + (f"\n{caption}" if caption.strip() else ""),
+            media_url=media_url,
+        )
 
         logger.info("RM file sent to %s: %s (%d bytes)", _short_phone(phone), filename, len(content))
         return {"status": "sent", "to": _short_phone(phone), "file": filename, "url": media_url}

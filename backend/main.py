@@ -34,7 +34,7 @@ logger = logging.getLogger("fi-chat")
 
 app = FastAPI(title="FundsIndia AI Advisory Bot", version="0.1.0")
 
-# CORS for dashboard
+# CORS for dashboard (allow all origins for demo/hackathon)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -232,21 +232,20 @@ async def _process_message(phone: str, message: str) -> None:
         for i, msg in enumerate(messages):
             logger.info("[%s] RESPONSE [%d/%d] ↓↓↓\n%s", tag, i + 1, len(messages), msg)
 
-        # Save full response to history (joined)
+        # Save full response to history (joined), include media_url if present
         full_response = "\n\n".join(messages)
-        _store.add_message(phone, "assistant", full_response)
+        _store.add_message(phone, "assistant", full_response, media_url=media_url)
 
         # Send as multi-message (last block gets buttons if template specified)
         sender = _get_sender()
         if media_url:
             # PDF or media response: send text + media attachment
             await sender.send_text(to=phone, text=messages[0], media_url=media_url)
-            # Post-PDF TTA nudge (after first PDF delivery)
-            if session.get("pdf_regen_count", 0) <= 1:
-                await asyncio.sleep(1.5)
-                nudge = _post_pdf_nudge(language)
-                await sender.send_with_buttons(to=phone, body=nudge, template_name=TEMPLATE_POST_PDF)
-                logger.info("[%s] POST-PDF TTA NUDGE sent (with buttons)", tag)
+            # Post-PDF TTA nudge
+            await asyncio.sleep(1.5)
+            nudge = _post_pdf_nudge(language)
+            await sender.send_with_buttons(to=phone, body=nudge, template_name=TEMPLATE_POST_PDF)
+            logger.info("[%s] POST-PDF TTA NUDGE sent (with buttons)", tag)
         else:
             await sender.send_multi(to=phone, messages=messages, template_name=template_name)
 

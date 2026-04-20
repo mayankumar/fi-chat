@@ -20,8 +20,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const API_BASE = "https://phylicia-subcerebral-laurie.ngrok-free.dev/api";
-const HEADERS = { "ngrok-skip-browser-warning": "1" };
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://phylicia-subcerebral-laurie.ngrok-free.dev/api";
+const HEADERS: Record<string, string> = { "ngrok-skip-browser-warning": "1" };
 
 // ── Utilities ──────────────────────────────────────────────────────────
 
@@ -92,6 +92,7 @@ interface Message {
   role: string;
   content: string;
   timestamp: string;
+  media_url?: string;
 }
 
 interface Summary {
@@ -650,6 +651,22 @@ export default function Dashboard() {
                           </div>
                         )}
                         {msg.content.replace("[RM] ", "")}
+                        {msg.media_url && (
+                          <a
+                            href={msg.media_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              "mt-1.5 flex items-center gap-1.5 px-2 py-1 rounded text-xs transition",
+                              isRM ? "bg-white/10 text-sky-100 hover:bg-white/20" : "bg-black/5 text-blue-600 hover:text-blue-800 hover:bg-black/10"
+                            )}
+                          >
+                            <Paperclip className="w-3 h-3" />
+                            <span className="underline truncate max-w-[200px]">
+                              {msg.media_url.split("/").pop() || "attachment"}
+                            </span>
+                          </a>
+                        )}
                         <div className={cn("text-[10px] mt-1.5 text-right", isUser ? "text-slate-300" : isRM ? "text-sky-200" : "text-emerald-300")}>
                           {formatTimestamp(msg.timestamp)}
                         </div>

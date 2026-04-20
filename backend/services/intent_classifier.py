@@ -49,6 +49,8 @@ Classify the user message into exactly ONE intent. Be STRICT — prefer specific
 2. If user says "yes" or agrees after bot offered a PDF — classify as pdf_modification.
 3. If user mentions saving for retirement, education, wealth, house, car, marriage — classify as goal_discovery.
 4. NEVER classify goal-related answers as general_chat. Context matters!
+5. If user wants to CHANGE/MODIFY their plan — like "change SIP to 20000", "make it 15 years", "switch to retirement", "increase amount", "reduce tenure" — classify as goal_discovery (modification triggers plan regeneration).
+6. If conversation shows a plan was already generated and user provides new parameters or asks to change something about the plan — classify as goal_discovery.
 
 == CONVERSATION CONTEXT ==
 {history}

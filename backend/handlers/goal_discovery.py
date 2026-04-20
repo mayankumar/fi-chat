@@ -5,6 +5,7 @@ Flow:
   2. Sonnet extracts what's known, asks for what's missing — ONE question at a time
   3. When enough info collected → calls generate_plan()
   4. Sends text summary + offers PDF
+  5. If user modifies goal/SIP after plan → regenerates with new params
 """
 from __future__ import annotations
 
@@ -43,6 +44,14 @@ Your job: Extract investment goal parameters from the conversation and decide wh
 - A plan is READY when we have: goal_type + (tenure_years OR age to derive it) + sip_amount
 - If user gives target_amount but not sip_amount, we can still generate (engine calculates SIP)
 - So READY = goal_type + tenure info + (sip_amount OR target_amount)
+- If user is MODIFYING an existing plan (changing goal, SIP amount, tenure, etc.), extract the new values and set ready=true to regenerate
+- If user says something like "change SIP to 15000" or "make it 20 years" or "switch to retirement", update the relevant field and mark ready=true
+
+== IMPORTANT: DETECTING MODIFICATIONS ==
+- If a plan already exists (plan_exists=true below), and user mentions new values for any parameter, treat it as a modification
+- Override the old value with the new one
+- Set ready=true so the plan regenerates with updated params
+- User might say: "change to 25000", "make it aggressive", "I want to save for retirement instead", "reduce tenure to 10 years"
 
 == CONVERSATION CONTEXT ==
 {history}
@@ -52,6 +61,9 @@ Your job: Extract investment goal parameters from the conversation and decide wh
 
 == CURRENTLY COLLECTED ==
 {collected}
+
+== PLAN ALREADY EXISTS ==
+{plan_exists}
 
 == RESPOND WITH ONLY VALID JSON (no markdown) ==
 {{
@@ -63,7 +75,8 @@ Your job: Extract investment goal parameters from the conversation and decide wh
     "child_age": <int or null>,
     "current_age": <int or null>
   }},
-  "ready": <true if enough info to generate plan>,
+  "ready": <true if enough info to generate plan OR if modifying existing plan>,
+  "is_modification": <true if user is changing an already-generated plan>,
   "next_question": "<friendly question to ask next, in user's language, with emoji. null if ready>",
   "language": "<en|hi|hinglish — match user's language>"
 }}"""
@@ -82,6 +95,7 @@ async def handle_goal_discovery(
     # Get current collected state
     flow = session.get("flow_state", {})
     collected = flow.get("goal_collected", {})
+    plan_exists = flow.get("current_plan") is not None
 
     # Build history context
     recent = history[-8:] if history else []
@@ -96,6 +110,7 @@ async def handle_goal_discovery(
                 history=history_text,
                 message=message,
                 collected=json.dumps(collected),
+                plan_exists=str(plan_exists).lower(),
             ),
         }],
     )
@@ -125,6 +140,7 @@ async def handle_goal_discovery(
     session["flow_state"] = flow
 
     ready = result.get("ready", False)
+    is_modification = result.get("is_modification", False)
 
     if not ready:
         # Ask next question
@@ -134,7 +150,10 @@ async def handle_goal_discovery(
         return question
 
     # ── Plan generation ───────────────────────────────────────────
-    logger.info("Goal collection complete: %s", collected)
+    if is_modification:
+        logger.info("Goal MODIFICATION detected — regenerating plan with: %s", collected)
+    else:
+        logger.info("Goal collection complete: %s", collected)
 
     goal_type = collected.get("goal_type", "wealth_creation")
     plan = generate_plan(
@@ -146,12 +165,12 @@ async def handle_goal_discovery(
         current_age=collected.get("current_age"),
     )
 
-    # Store plan in session
+    # Store plan in session (overwrite any existing plan)
     flow["current_plan"] = plan
     session["flow_state"] = flow
 
     # Generate text summary
-    summary = _format_plan_summary(plan, language)
+    summary = _format_plan_summary(plan, language, is_modification)
     return summary
 
 
@@ -185,7 +204,7 @@ def _default_next_question(collected: dict, language: str) -> str:
     return "Let me generate your personalized plan! 🎯"
 
 
-def _format_plan_summary(plan: dict, language: str) -> str:
+def _format_plan_summary(plan: dict, language: str, is_modification: bool = False) -> str:
     """Format plan as WhatsApp-friendly multi-message text."""
     sip = plan["sip_required"]
     fv = plan["future_value"]
@@ -204,8 +223,17 @@ def _format_plan_summary(plan: dict, language: str) -> str:
             return f"₹{amt/100_000:.1f} L"
         return f"₹{amt:,.0f}"
 
+    # Modification header
+    mod_prefix = ""
+    if is_modification:
+        if language == "hinglish":
+            mod_prefix = "✅ *Done! Aapka updated plan ready hai:*\n\n"
+        else:
+            mod_prefix = "✅ *Done! Here's your updated plan:*\n\n"
+
     # Message 1: Goal overview
     msg1 = (
+        f"{mod_prefix}"
         f"🎯 *Your {goal} Plan*\n\n"
         f"📊 Target: {fmt(pv)} → {fmt(fv)} (inflation-adjusted)\n"
         f"⏰ Timeline: {tenure} years\n"

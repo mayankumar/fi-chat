@@ -29,7 +29,6 @@ def _blank_session(phone: str) -> dict[str, Any]:
         "active_intent": None,
         "flow_state": {},
         "handoff_state": "bot_active",
-        "pdf_regen_count": 0,
         "created_at": now,
         "updated_at": now,
     }
@@ -58,11 +57,12 @@ class SessionStore:
         path = SESSIONS_DIR / f"{_safe_filename(phone)}.json"
         path.write_text(json.dumps(session, ensure_ascii=False, indent=2))
 
-    def add_message(self, phone: str, role: str, content: str) -> None:
+    def add_message(self, phone: str, role: str, content: str, media_url: str = None) -> None:
         session = self.get(phone)
-        session["messages"].append(
-            {"role": role, "content": content, "timestamp": _now()}
-        )
+        msg = {"role": role, "content": content, "timestamp": _now()}
+        if media_url:
+            msg["media_url"] = media_url
+        session["messages"].append(msg)
         # sliding window trim
         if len(session["messages"]) > self._max_history:
             session["messages"] = session["messages"][-self._max_history :]
