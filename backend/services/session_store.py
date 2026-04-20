@@ -57,11 +57,13 @@ class SessionStore:
         path = SESSIONS_DIR / f"{_safe_filename(phone)}.json"
         path.write_text(json.dumps(session, ensure_ascii=False, indent=2))
 
-    def add_message(self, phone: str, role: str, content: str, media_url: str = None) -> None:
+    def add_message(self, phone: str, role: str, content: str, media_url: str = None, media_type: str = None) -> None:
         session = self.get(phone)
         msg = {"role": role, "content": content, "timestamp": _now()}
         if media_url:
             msg["media_url"] = media_url
+        if media_type:
+            msg["media_type"] = media_type
         session["messages"].append(msg)
         # sliding window trim
         if len(session["messages"]) > self._max_history:
@@ -102,3 +104,15 @@ class SessionStore:
 
 def _safe_filename(phone: str) -> str:
     return phone.replace("+", "").replace(":", "_")
+
+
+# Module-level singleton — ensures all imports share the same instance
+_singleton: SessionStore | None = None
+
+
+def get_session_store() -> SessionStore:
+    """Return the shared SessionStore singleton."""
+    global _singleton
+    if _singleton is None:
+        _singleton = SessionStore()
+    return _singleton

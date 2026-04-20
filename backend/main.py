@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.config import get_settings
 from backend.api.dashboard import router as dashboard_router
 from backend.api.voice import router as voice_router
-from backend.services.session_store import SessionStore
+from backend.services.session_store import get_session_store
 from backend.services.twilio_sender import TwilioSender, TEMPLATE_POST_PDF
 from backend.services.language import detect_language
 from backend.services.consent import get_disclaimer, check_consent_reply, CONSENT_VERSION
@@ -24,6 +24,7 @@ from backend.data.mock_users import get_user
 from backend.services.handoff import create_handoff
 from backend.services.agitation import check_agitation, should_trigger_tta, get_proactive_tta_message
 from backend.services.session_memory import generate_session_summary, build_memory_context
+from backend.services.speech import transcribe, synthesize
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,7 +51,7 @@ app.include_router(voice_router)
 app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
 # Singletons
-_store = SessionStore()
+_store = get_session_store()
 _sender: TwilioSender | None = None
 
 _EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response/>'
@@ -98,13 +99,21 @@ async def whatsapp_webhook(request: Request) -> PlainTextResponse:
     # Use button payload as message if present
     effective_message = button_payload or body
 
-    # Reject empty / media-only messages
+    # Handle media messages (voice notes, images, etc.)
+    num_media = int(form.get("NumMedia", "0"))
+    media_content_type = form.get("MediaContentType0", "")
+    media_url_incoming = form.get("MediaUrl0", "")
+
     if not effective_message:
-        num_media = int(form.get("NumMedia", "0"))
-        if num_media > 0:
-            logger.info("[%s] WEBHOOK — media-only message (%d files), rejecting", tag, num_media)
+        if num_media > 0 and media_content_type.startswith("audio/"):
+            # Voice message — transcribe and process
+            logger.info("[%s] WEBHOOK — voice message detected (%s)", tag, media_content_type)
+            asyncio.create_task(_process_voice_message(phone, media_url_incoming))
+            return _ack()
+        elif num_media > 0:
+            logger.info("[%s] WEBHOOK — media-only message (%d files, type=%s), rejecting", tag, num_media, media_content_type)
             asyncio.create_task(
-                _send_text(phone, "I can only process text messages for now. Please send me a text! 📝")
+                _send_text(phone, "I can only process text and voice messages for now. Please send me a text or voice note! 📝🎤")
             )
         else:
             logger.info("[%s] WEBHOOK — empty message, ignoring", tag)
@@ -117,7 +126,7 @@ async def whatsapp_webhook(request: Request) -> PlainTextResponse:
     return _ack()
 
 
-async def _process_message(phone: str, message: str) -> None:
+async def _process_message(phone: str, message: str, skip_save: bool = False) -> None:
     """Main message processing pipeline."""
     tag = _short_phone(phone)
     t_start = time.monotonic()
@@ -194,8 +203,9 @@ async def _process_message(phone: str, message: str) -> None:
             message = _BUTTON_MAP[message]
             logger.info("[%s] BUTTON MAPPED — %s", tag, message)
 
-        # 3. Save user message
-        _store.add_message(phone, "user", message)
+        # 3. Save user message (skip if already saved by voice pipeline)
+        if not skip_save:
+            _store.add_message(phone, "user", message)
         history = _store.get_history(phone)
         logger.info("[%s] HISTORY — %d messages in context", tag, len(history))
 
@@ -271,6 +281,104 @@ async def _process_message(phone: str, message: str) -> None:
     except Exception:
         logger.exception("[%s] PIPELINE ERROR", tag)
         await _send_text(phone, "Sorry, something went wrong. Please try again 🙏")
+
+
+async def _process_voice_message(phone: str, audio_url: str) -> None:
+    """Process a voice message: download → transcribe → pipeline → TTS reply.
+
+    Flow:
+      1. Download audio from Twilio, save MP3 locally
+      2. Transcribe via Whisper
+      3. Save user message (transcript + audio_url + media_type=voice)
+      4. Run normal text pipeline → bot sends text reply
+      5. Synthesize bot's reply to audio via TTS
+      6. Send voice reply as follow-up message
+      7. Tag assistant message with audio_url for dashboard playback
+    """
+    tag = _short_phone(phone)
+    t_start = time.monotonic()
+
+    try:
+        settings = get_settings()
+
+        if not settings.openai_api_key:
+            logger.warning("[%s] VOICE — OpenAI key not set, cannot transcribe", tag)
+            await _send_text(phone, "Voice messages are not configured yet. Please send a text message! 📝")
+            return
+
+        # 1. Download + transcribe audio (also saves incoming audio to static/audio/)
+        logger.info("[%s] VOICE — transcribing audio...", tag)
+        t0 = time.monotonic()
+        result = await transcribe(
+            audio_url,
+            twilio_auth=(settings.twilio_account_sid, settings.twilio_auth_token),
+        )
+        transcript = result["transcript"]
+        incoming_audio_url = result["audio_url"]
+        logger.info("[%s] VOICE — transcript: %r, audio saved: %s (%.1fs)",
+                     tag, transcript[:80] if transcript else "", incoming_audio_url, time.monotonic() - t0)
+
+        if not transcript:
+            await _send_text(phone, "I couldn't understand that voice message. Could you try again or send a text? 🎤")
+            return
+
+        # 2. Save user message with transcript + voice audio file
+        _store.add_message(phone, "user", transcript,
+                           media_url=incoming_audio_url, media_type="voice")
+
+        # 3. Check consent — if pending, just run text pipeline (no TTS for disclaimer)
+        session = _store.get(phone)
+        if not session["consent_given"]:
+            await _process_message(phone, transcript, skip_save=True)
+            logger.info("[%s] VOICE — consent pending, skipping TTS", tag)
+            return
+
+        # 4. Count messages BEFORE running pipeline (to find the NEW assistant reply after)
+        msg_count_before = len(session.get("messages", []))
+
+        # 5. Run normal text pipeline — this classifies intent, routes, sends text reply
+        await _process_message(phone, transcript, skip_save=True)
+
+        # 6. Find the NEW assistant message(s) added by the pipeline
+        all_messages = session.get("messages", [])
+        new_messages = [m for m in all_messages[msg_count_before:]
+                        if m["role"] == "assistant"]
+
+        if not new_messages:
+            logger.warning("[%s] VOICE — no new assistant message after pipeline, skipping TTS", tag)
+            elapsed = time.monotonic() - t_start
+            logger.info("[%s] VOICE PIPELINE DONE — total %.1fs (no TTS)", tag, elapsed)
+            return
+
+        # 7. Synthesize the NEW response as voice
+        if settings.voice_replies_enabled:
+            latest_reply = new_messages[-1]
+            tts_text = latest_reply["content"]
+            # Clean markdown formatting for natural speech
+            tts_text = tts_text.replace("*", "").replace("_", "").replace("|||", ". ")
+
+            logger.info("[%s] VOICE — synthesizing TTS for: %r", tag, tts_text[:80])
+            t0 = time.monotonic()
+            reply_audio_url = await synthesize(tts_text)
+
+            if reply_audio_url:
+                logger.info("[%s] VOICE — TTS done (%.1fs), sending audio", tag, time.monotonic() - t0)
+                sender = _get_sender()
+                await sender.send_text(to=phone, text="🎧 *Voice reply:*", media_url=reply_audio_url)
+
+                # Tag the assistant message with audio URL (for dashboard playback)
+                latest_reply["audio_url"] = reply_audio_url
+                latest_reply["media_type"] = "voice"
+                _store.save(phone)
+            else:
+                logger.warning("[%s] VOICE — TTS synthesis failed, text-only reply sent", tag)
+
+        elapsed = time.monotonic() - t_start
+        logger.info("[%s] VOICE PIPELINE DONE — total %.1fs", tag, elapsed)
+
+    except Exception:
+        logger.exception("[%s] VOICE PIPELINE ERROR", tag)
+        await _send_text(phone, "Sorry, I had trouble processing your voice message. Please try again 🙏")
 
 
 def _extract_messages(reply) -> list:

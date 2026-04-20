@@ -12,7 +12,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from backend.config import get_settings
-from backend.services.session_store import SessionStore
+from backend.services.session_store import get_session_store
 from backend.services.twilio_sender import TwilioSender
 from backend.services.handoff import get_all_handoffs, get_handoff, resolve_handoff, generate_handoff_brief
 from backend.data.mock_users import get_user
@@ -21,7 +21,7 @@ logger = logging.getLogger("fi-chat.dashboard")
 
 router = APIRouter(prefix="/api", tags=["dashboard"])
 
-_store = SessionStore()
+_store = get_session_store()
 _sender: Optional[TwilioSender] = None
 
 

@@ -18,6 +18,7 @@ import {
   Loader2,
   CalendarClock,
   ShieldCheck,
+  Mic,
 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://phylicia-subcerebral-laurie.ngrok-free.dev/api";
@@ -93,6 +94,8 @@ interface Message {
   content: string;
   timestamp: string;
   media_url?: string;
+  media_type?: "voice" | "file" | null;
+  audio_url?: string;
 }
 
 interface Summary {
@@ -251,31 +254,34 @@ export default function Dashboard() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    initVoiceDevice();
     return () => {
       deviceRef.current?.destroy();
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  async function initVoiceDevice() {
+  async function ensureVoiceDevice(): Promise<Device | null> {
+    // Reuse existing device if already registered
+    if (deviceRef.current) return deviceRef.current;
     try {
       const res = await fetch(`${API_BASE}/voice/token`, { headers: HEADERS });
       const data = await res.json();
-      if (data.error) return;
+      if (data.error) return null;
       const device = new Device(data.token, { edge: "ashburn" });
       device.on("error", () => setCallStatus("error"));
       await device.register();
       deviceRef.current = device;
+      return device;
     } catch {
-      // Voice is non-critical
+      return null;
     }
   }
 
   async function handleCall() {
-    if (!selectedPhone || !deviceRef.current) return;
+    if (!selectedPhone) return;
     const rawPhone = selectedPhone.replace("whatsapp:", "");
 
+    // Hang up if already in a call
     if (callStatus === "active" || callStatus === "connecting" || callStatus === "ringing") {
       activeCallRef.current?.disconnect();
       activeCallRef.current = null;
@@ -286,8 +292,16 @@ export default function Dashboard() {
     }
 
     setCallStatus("connecting");
+
+    // Lazy-init voice device on first call attempt
+    const device = await ensureVoiceDevice();
+    if (!device) {
+      setCallStatus("error");
+      return;
+    }
+
     try {
-      const call = await deviceRef.current.connect({ params: { To: rawPhone } });
+      const call = await device.connect({ params: { To: rawPhone } });
       activeCallRef.current = call;
       call.on("ringing", () => setCallStatus("ringing"));
       call.on("accept", () => {
@@ -576,7 +590,7 @@ export default function Dashboard() {
                 {/* Call button — timer embedded when active */}
                 <button
                   onClick={handleCall}
-                  disabled={!deviceRef.current && callStatus === "idle"}
+                  disabled={callStatus === "connecting"}
                   className={cn(
                     "inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-semibold whitespace-nowrap transition-all",
                     callStatus === "active" || callStatus === "ringing"
@@ -650,8 +664,25 @@ export default function Dashboard() {
                             <Bot className="w-3 h-3" /> RM Message
                           </div>
                         )}
+                        {msg.media_type === "voice" && (
+                          <div className={cn(
+                            "flex items-center gap-1.5 text-[10px] font-semibold mb-1.5 uppercase tracking-wide",
+                            isUser ? "text-violet-500" : "text-emerald-500"
+                          )}>
+                            <Mic className="w-3 h-3" /> Voice Message
+                          </div>
+                        )}
                         {msg.content.replace("[RM] ", "")}
-                        {msg.media_url && (
+                        {/* Audio player for voice messages */}
+                        {msg.media_type === "voice" && (msg.audio_url || msg.media_url) && (
+                          <audio
+                            controls
+                            className="mt-2 w-full max-w-[240px] h-8 rounded"
+                            src={msg.audio_url || msg.media_url}
+                          />
+                        )}
+                        {/* File attachment link (non-voice) */}
+                        {msg.media_url && msg.media_type !== "voice" && (
                           <a
                             href={msg.media_url}
                             target="_blank"

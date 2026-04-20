@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     # Public base URL (for media/PDF URLs)
     media_base_url: str = ""
 
+    # OpenAI (Whisper STT + TTS for voice messages)
+    openai_api_key: str = ""
+    voice_replies_enabled: bool = True
+    tts_model: str = "tts-1"
+    tts_voice: str = "nova"
+
     # Security
     validate_twilio_signature: bool = False
 
