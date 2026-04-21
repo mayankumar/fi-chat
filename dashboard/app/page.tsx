@@ -8,8 +8,8 @@ import {
   AlertCircle, CheckCircle2, Sparkles, IndianRupee,
   PanelRightClose, TrendingUp, TrendingDown,
   SmilePlus, Frown, Meh, Bot, Zap, Loader2, CalendarClock,
-  ShieldCheck, Mic, MicOff, X, Bell, Home, BarChart2,
-  ArrowRight, PhoneMissed, Volume2, Headphones, Timer,
+  ShieldCheck, Mic, MicOff, Bell, Home, BarChart2,
+  PhoneMissed, Volume2, Headphones, Timer,
   AlertTriangle,
 } from "lucide-react";
 
