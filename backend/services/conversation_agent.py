@@ -154,13 +154,44 @@ async def generate_response(
 
     except anthropic.RateLimitError:
         logger.error("Sonnet rate limited (%.1fs)", time.monotonic() - t0)
-        return "I'm handling a lot of queries right now. Please try again in a few seconds! 🙏"
+        return _error_reply(language, "busy")
     except anthropic.APIConnectionError:
         logger.error("Sonnet connection error (%.1fs)", time.monotonic() - t0)
-        return "I'm having trouble connecting right now. Please try again shortly 🔄"
+        return _error_reply(language, "connection")
     except anthropic.APIError:
         logger.exception("Sonnet API error (%.1fs)", time.monotonic() - t0)
-        return "Something went wrong on my end. Please try again in a moment 🙏"
+        return _error_reply(language, "generic")
+
+
+_ERROR_REPLIES = {
+    "en": {
+        "busy":       "I'm handling a lot right now — try me again in a few seconds 🙏",
+        "connection": "I'm having trouble connecting — mind trying again in a moment? 🔄",
+        "generic":    "Something went wrong on my end — please try again 🙏",
+    },
+    "hinglish": {
+        "busy":       "Abhi thoda load hai — thode seconds mein phir try kariye 🙏",
+        "connection": "Connection mein issue hai — ek moment mein phir try kariye? 🔄",
+        "generic":    "Kuch galat ho gaya mere end pe — please ek baar aur try kariye 🙏",
+    },
+    "hi": {
+        "busy":       "अभी थोड़ा load है — कुछ seconds में फिर try कीजिए 🙏",
+        "connection": "Connection में issue है — एक moment में फिर try करें? 🔄",
+        "generic":    "कुछ गलत हो गया — please एक बार फिर try कीजिए 🙏",
+    },
+}
+
+_ERROR_HINT = {
+    "en": "💡 You can ask: \"step up my SIP\", \"plan for my retirement\", \"how's my portfolio?\"",
+    "hinglish": "💡 Aap pooch sakte hain: \"SIP badhao\", \"retirement plan karo\", \"portfolio kaisa hai?\"",
+    "hi": "💡 आप पूछ सकते हैं: \"SIP बढ़ाओ\", \"retirement plan करो\", \"portfolio कैसा है?\"",
+}
+
+
+def _error_reply(language: str, kind: str) -> str:
+    table = _ERROR_REPLIES.get(language) or _ERROR_REPLIES["en"]
+    hint = _ERROR_HINT.get(language) or _ERROR_HINT["en"]
+    return f"{table[kind]}\n\n{hint}"
 
 
 def _build_user_context(phone: str) -> str:

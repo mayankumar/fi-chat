@@ -293,10 +293,19 @@ def _pdf_caption(language: str) -> str:
 
 def _cta_text(language: str) -> str:
     if language == "hinglish":
-        return "Ab aage kya? Hamare expert advisor se baat karna chahenge? 🧑‍💼"
+        return (
+            "Ab aage kya? Hamare expert advisor se baat karna chahenge? 🧑‍💼\n\n"
+            "💡 Ya sidha poochiye — \"SIP kam/zyada karo\", \"15 saal kar do\", \"ek aur goal plan karo\""
+        )
     if language == "hi":
-        return "आगे क्या? हमारे expert advisor से बात करना चाहेंगे? 🧑‍💼"
-    return "What's next? Want to talk to one of our expert advisors? 🧑‍💼"
+        return (
+            "आगे क्या? हमारे expert advisor से बात करना चाहेंगे? 🧑‍💼\n\n"
+            "💡 या बस पूछिए — \"SIP बढ़ा/घटा दो\", \"15 साल कर दो\", \"एक और goal plan करो\""
+        )
+    return (
+        "What's next? Want to talk to one of our expert advisors? 🧑‍💼\n\n"
+        "💡 Or just tell me — \"increase/reduce SIP\", \"make it 15 years\", \"plan another goal\""
+    )
 
 
 # Fallback questions keyed by slot; used only when Haiku returns no next_question.
