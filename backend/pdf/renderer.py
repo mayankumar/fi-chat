@@ -42,6 +42,19 @@ async def generate_pdf(plan: dict, phone: str) -> str:
     # Prepare template context
     context = _build_context(plan)
 
+    # Merge user/legal context so the template can render cover + disclaimer.
+    from backend.data.mock_users import get_user
+    from backend.services.consent import TERMS_URL, PRIVACY_URL
+
+    user = get_user(phone)
+    context.update({
+        "user_name": user["name"] if user else "Investor",
+        "rm_name": user["rm_name"] if user else "your advisor",
+        "generated_on": date.today().strftime("%d %b %Y"),
+        "terms_url": TERMS_URL,
+        "privacy_url": PRIVACY_URL,
+    })
+
     # Render HTML
     template = _jinja_env.get_template("plan_report.html")
     html_content = template.render(**context)
