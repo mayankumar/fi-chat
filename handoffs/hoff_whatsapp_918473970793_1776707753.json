@@ -1,0 +1,14 @@
+{
+  "id": "hoff_whatsapp_918473970793_1776707753",
+  "phone": "whatsapp:+918473970793",
+  "language": "en",
+  "user_segment": "new",
+  "reason": "user_requested",
+  "urgency": "normal",
+  "active_intent": "tta_request",
+  "message_count": 2,
+  "has_plan": false,
+  "status": "pending",
+  "created_at": "2026-04-20T17:55:53.577776+00:00",
+  "resolved_at": null
+}

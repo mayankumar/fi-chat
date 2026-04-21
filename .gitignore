@@ -9,3 +9,9 @@ venv/
 sessions/
 *.pdf
 .DS_Store
+backend/static/audio/
+backend/static/uploads/
+backend/static/pdfs/
+backend/data/pdfs/
+handoffs/
+session_memories/

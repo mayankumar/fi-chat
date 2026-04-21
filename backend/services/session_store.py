@@ -29,7 +29,6 @@ def _blank_session(phone: str) -> dict[str, Any]:
         "active_intent": None,
         "flow_state": {},
         "handoff_state": "bot_active",
-        "pdf_regen_count": 0,
         "created_at": now,
         "updated_at": now,
     }
@@ -58,11 +57,14 @@ class SessionStore:
         path = SESSIONS_DIR / f"{_safe_filename(phone)}.json"
         path.write_text(json.dumps(session, ensure_ascii=False, indent=2))
 
-    def add_message(self, phone: str, role: str, content: str) -> None:
+    def add_message(self, phone: str, role: str, content: str, media_url: str = None, media_type: str = None) -> None:
         session = self.get(phone)
-        session["messages"].append(
-            {"role": role, "content": content, "timestamp": _now()}
-        )
+        msg = {"role": role, "content": content, "timestamp": _now()}
+        if media_url:
+            msg["media_url"] = media_url
+        if media_type:
+            msg["media_type"] = media_type
+        session["messages"].append(msg)
         # sliding window trim
         if len(session["messages"]) > self._max_history:
             session["messages"] = session["messages"][-self._max_history :]
@@ -74,6 +76,14 @@ class SessionStore:
         return [
             {"role": m["role"], "content": m["content"]} for m in session["messages"]
         ]
+
+    def get_existing(self, phone: str) -> dict[str, Any] | None:
+        """Return session if it exists, None otherwise (no auto-create)."""
+        return self._sessions.get(phone)
+
+    def get_all(self) -> dict[str, dict[str, Any]]:
+        """Return all sessions (for dashboard list view)."""
+        return dict(self._sessions)
 
     def clear(self, phone: str) -> None:
         self._sessions[phone] = _blank_session(phone)
@@ -94,3 +104,15 @@ class SessionStore:
 
 def _safe_filename(phone: str) -> str:
     return phone.replace("+", "").replace(":", "_")
+
+
+# Module-level singleton — ensures all imports share the same instance
+_singleton: SessionStore | None = None
+
+
+def get_session_store() -> SessionStore:
+    """Return the shared SessionStore singleton."""
+    global _singleton
+    if _singleton is None:
+        _singleton = SessionStore()
+    return _singleton

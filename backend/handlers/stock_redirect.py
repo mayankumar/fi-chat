@@ -1,23 +1,37 @@
-"""Firm refusal for stock/equity questions with TTA redirect."""
+"""Firm refusal for stock/equity questions with TTA redirect buttons."""
+from __future__ import annotations
+
+from backend.services.twilio_sender import TEMPLATE_STOCK_REDIRECT
 
 _RESPONSES = {
     "en": (
-        "I appreciate your interest, but I'm not able to provide specific stock recommendations or equity trading advice.\n\n"
-        "FundsIndia's strength is in *mutual fund advisory* — we can help you find funds that give you diversified equity exposure.\n\n"
-        "If you'd like to discuss equity investments, I can connect you with our advisory team. Just say *'talk to advisor'*."
+        "I appreciate the interest! 🙌\n\n"
+        "However, I specialize in *mutual funds & goal-based investing* — "
+        "I'm not able to help with specific stock picks or equity trading.\n\n"
+        "For *diversified equity exposure*, mutual funds are a great option! 📈\n"
+        "Or I can connect you with our *expert advisory team* for equity guidance."
     ),
     "hi": (
-        "आपकी रुचि की सराहना करता हूँ, लेकिन मैं specific stock recommendations या equity trading advice देने में असमर्थ हूँ।\n\n"
-        "FundsIndia की विशेषता *mutual fund advisory* में है — हम आपको diversified equity exposure वाले funds खोजने में मदद कर सकते हैं।\n\n"
-        "अगर आप equity investments पर चर्चा करना चाहते हैं, तो मैं आपको हमारी advisory team से जोड़ सकता हूँ। बस *'talk to advisor'* कहें।"
+        "आपकी रुचि की सराहना करता हूँ! 🙌\n\n"
+        "लेकिन मेरी विशेषता *mutual funds और goal-based investing* में है — "
+        "specific stock picks या equity trading में मैं मदद नहीं कर पाऊंगा।\n\n"
+        "Diversified equity exposure के लिए mutual funds बेहतरीन option है! 📈\n"
+        "या मैं आपको हमारी *expert advisory team* से connect करा सकता हूँ।"
     ),
     "hinglish": (
-        "Aapki interest ki main qadr karta hoon, lekin main specific stock recommendations ya equity trading advice nahi de sakta.\n\n"
-        "FundsIndia ki strength *mutual fund advisory* mein hai — hum aapko diversified equity exposure wale funds dhundhne mein madad kar sakte hain.\n\n"
-        "Agar aap equity investments discuss karna chahte hain, toh main aapko hamari advisory team se connect kar sakta hoon. Bas *'talk to advisor'* bolein."
+        "Interest ke liye thanks! 🙌\n\n"
+        "Lekin meri specialty *mutual funds aur goal-based investing* mein hai — "
+        "specific stock picks ya equity trading mein main help nahi kar paunga.\n\n"
+        "Diversified equity exposure ke liye mutual funds great option hai! 📈\n"
+        "Ya main aapko hamari *expert advisory team* se connect kara sakta hoon."
     ),
 }
 
 
-def get_stock_redirect(language: str) -> str:
-    return _RESPONSES.get(language, _RESPONSES["en"])
+def get_stock_redirect(language: str) -> dict:
+    """Return structured response with quick-reply buttons."""
+    text = _RESPONSES.get(language, _RESPONSES["en"])
+    return {
+        "messages": [text],
+        "template_name": TEMPLATE_STOCK_REDIRECT,
+    }
