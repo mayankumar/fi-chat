@@ -123,6 +123,234 @@
         .footer-brand { font-weight: 700; letter-spacing: 1px; }
         .footer-meta { opacity: 0.85; }
 
+        /* ── Cover page ── */
+        .cover {
+            flex: 1;
+            background: linear-gradient(135deg, #062e19 0%, #0d7a3f 55%, #15a352 100%);
+            color: white;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -220px; right: -220px;
+            width: 640px; height: 640px;
+            background: radial-gradient(circle, rgba(29,185,84,0.28) 0%, rgba(29,185,84,0) 60%);
+            border-radius: 50%;
+        }
+        .cover::after {
+            content: '';
+            position: absolute;
+            bottom: -260px; left: -200px;
+            width: 620px; height: 620px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 65%);
+            border-radius: 50%;
+        }
+        .cover-top {
+            padding: 46px 40px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .cover-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cover-logo {
+            width: 34px; height: 34px;
+            border-radius: 9px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .cover-brand-name {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .cover-brand-tag {
+            font-size: 9px;
+            opacity: 0.7;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+        .cover-center {
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover-eyebrow {
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .cover-title {
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .cover-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.85;
+            max-width: 380px;
+            line-height: 1.5;
+        }
+        .cover-name {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.18);
+            font-size: 11px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        .cover-name strong {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            text-transform: none;
+            margin-top: 3px;
+            opacity: 1;
+        }
+        .cover-meta {
+            padding: 0 40px 46px;
+            display: flex;
+            gap: 26px;
+            position: relative;
+            z-index: 1;
+        }
+        .cover-meta-block { flex: 1; }
+        .cover-meta-label {
+            font-size: 8.5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 5px;
+        }
+        .cover-meta-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .cover-conf {
+            position: absolute;
+            top: 46px; right: 40px;
+            padding: 5px 12px;
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 999px;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.08);
+            z-index: 2;
+        }
+
+        /* ── Publicity page ── */
+        .publicity { padding: 28px 32px 10px; flex: 1; }
+        .publicity-eyebrow {
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #0d7a3f;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .publicity-head {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .publicity-sub {
+            font-size: 11px;
+            color: #4b5563;
+            margin-bottom: 18px;
+            max-width: 420px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .feature {
+            background: #f8faf9;
+            border: 1px solid #e8f0ec;
+            border-left: 3px solid #15a352;
+            border-radius: 8px;
+            padding: 14px 14px 12px;
+        }
+        .feature-icon {
+            display: inline-flex;
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            background: #dcfce7;
+            color: #0d7a3f;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .feature-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+        .feature-body {
+            font-size: 9.5px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+        .cta-band {
+            margin-top: 14px;
+            background: linear-gradient(135deg, #0d7a3f, #15a352);
+            color: white;
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+        }
+        .cta-text { max-width: 360px; }
+        .cta-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .cta-body {
+            font-size: 10px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .cta-chip {
+            font-size: 9.5px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
         /* ── Disclaimer page ── */
         .disclaimer-page { padding: 28px; }
         .disclaimer-title {
@@ -164,7 +392,56 @@
 </head>
 <body>
 
-<!-- ============ PAGE 1 — PORTFOLIO OVERVIEW ============ -->
+<!-- ============ PAGE 1 — COVER ============ -->
+<div class="page">
+    <div class="cover">
+        <div class="cover-conf">Confidential</div>
+
+        <div class="cover-top">
+            <div class="cover-brand">
+                <div class="cover-logo">Fi</div>
+                <div>
+                    <div class="cover-brand-name">FundsIndia</div>
+                    <div class="cover-brand-tag">AI Advisory</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cover-center">
+            <div class="cover-eyebrow">Portfolio Report</div>
+            <div class="cover-title">Your money,<br>on track.</div>
+            <div class="cover-subtitle">
+                A single-glance view of your holdings, returns, and goals —
+                prepared for you by Finn, your AI investment assistant.
+            </div>
+            <div class="cover-name">
+                Prepared for
+                <strong>{{ user_name }}</strong>
+            </div>
+        </div>
+
+        <div class="cover-meta">
+            <div class="cover-meta-block">
+                <div class="cover-meta-label">Date</div>
+                <div class="cover-meta-value">{{ generated_on }}</div>
+            </div>
+            <div class="cover-meta-block">
+                <div class="cover-meta-label">Risk Profile</div>
+                <div class="cover-meta-value">{{ risk_profile|capitalize }}</div>
+            </div>
+            <div class="cover-meta-block">
+                <div class="cover-meta-label">Advisor</div>
+                <div class="cover-meta-value">{{ rm_name }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="footer-brand">FundsIndia</div>
+        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 1 of 4</div>
+    </div>
+</div>
+
+<!-- ============ PAGE 2 — PORTFOLIO OVERVIEW ============ -->
 <div class="page">
     <div class="header">
         <div class="header-brand">FundsIndia · Portfolio Report</div>
@@ -312,11 +589,96 @@
 
     <div class="footer">
         <div class="footer-brand">FundsIndia</div>
-        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 1 of 2</div>
+        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 2 of 4</div>
     </div>
 </div>
 
-<!-- ============ PAGE 2 — DISCLAIMER ============ -->
+<!-- ============ PAGE 3 — YOUR FUNDSINDIA ADVISORY ============ -->
+<div class="page">
+    <div class="header">
+        <div class="header-brand">FundsIndia · Portfolio Report</div>
+        <div class="header-title">Your FundsIndia Advisory</div>
+        <div class="header-subtitle">What's working for you behind this report</div>
+    </div>
+
+    <div class="publicity">
+        <div class="publicity-eyebrow">Personalised guidance</div>
+        <div class="publicity-head">More than a statement — a working advisory.</div>
+        <div class="publicity-sub">
+            Your portfolio runs on a stack of tools designed around one goal: helping you make
+            confident decisions about your money. Here's what's quietly working for you.
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <div class="feature-title">Finn — your AI assistant</div>
+                <div class="feature-body">
+                    On WhatsApp, around the clock. Ask about your holdings, plan a goal,
+                    or get a fund explainer in seconds.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">👤</div>
+                <div class="feature-title">SEBI-registered advisors</div>
+                <div class="feature-body">
+                    When the decision needs a human, your Relationship Manager is one
+                    tap away — no hold music, no scripts.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Portfolio tracking</div>
+                <div class="feature-body">
+                    Holdings, XIRR, SIPs and goal progress in one view — refreshed whenever
+                    you ask for a snapshot.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Goal-based planning</div>
+                <div class="feature-body">
+                    Tell Finn the goal — retirement, a home, a child's education — and
+                    get a tailored SIP plan with milestones you can actually see.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔗</div>
+                <div class="feature-title">One-tap actions</div>
+                <div class="feature-body">
+                    Step-up, pause or start a SIP through secure single-use links. No
+                    forms, no back-and-forth.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-title">Secure by default</div>
+                <div class="feature-body">
+                    Action links are time-bound and single-use. Reports are generated
+                    against your folio only and shared on your registered WhatsApp.
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-band">
+            <div class="cta-text">
+                <div class="cta-title">Next step is a message away.</div>
+                <div class="cta-body">
+                    Reply on WhatsApp and say what you'd like next — plan a goal, step up
+                    a SIP, or call {{ rm_name }}.
+                </div>
+            </div>
+            <div class="cta-chip">Open WhatsApp →</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-brand">FundsIndia</div>
+        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 3 of 4</div>
+    </div>
+</div>
+
+<!-- ============ PAGE 4 — DISCLAIMER ============ -->
 <div class="page">
     <div class="header">
         <div class="header-brand">FundsIndia · Portfolio Report</div>
@@ -375,7 +737,7 @@
 
     <div class="footer">
         <div class="footer-brand">FundsIndia</div>
-        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 2 of 2</div>
+        <div class="footer-meta">Portfolio Report · {{ generated_on }} · Page 4 of 4</div>
     </div>
 </div>
 
