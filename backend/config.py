@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     twilio_api_key_sid: str = ""
     twilio_api_key_secret: str = ""
     twilio_twiml_app_sid: str = ""
+    twilio_voice_number: str = ""  # dedicated voice number for outbound calls (e.g. +91XXXXXXXXXX)
 
     # Models
     haiku_model: str = "claude-haiku-4-5-20251001"
@@ -28,8 +29,11 @@ class Settings(BaseSettings):
     # Message mode: "split" = separate messages (demo), "compact" = one long message (testing)
     message_mode: str = "compact"
 
-    # Public base URL (for media/PDF URLs)
+    # Public base URL (for media/PDF URLs — backend ngrok)
     media_base_url: str = ""
+
+    # Dashboard base URL (Next.js app — where /action/{token} landing pages live)
+    dashboard_base_url: str = "http://localhost:3000"
 
     # OpenAI (Whisper STT + TTS for voice messages)
     openai_api_key: str = ""

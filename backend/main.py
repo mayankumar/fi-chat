@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.config import get_settings
 from backend.api.dashboard import router as dashboard_router
 from backend.api.voice import router as voice_router
+from backend.api.actions import router as actions_router
 from backend.services.session_store import get_session_store
 from backend.services.twilio_sender import TwilioSender, TEMPLATE_POST_PDF
 from backend.services.language import detect_language
@@ -43,9 +44,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dashboard + Voice APIs
+# Dashboard + Voice + SIP Action APIs
 app.include_router(dashboard_router)
 app.include_router(voice_router)
+app.include_router(actions_router)
 
 # Mount static files for PDFs and media
 app.mount("/static", StaticFiles(directory="backend/static"), name="static")

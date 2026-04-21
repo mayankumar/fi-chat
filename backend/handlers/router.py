@@ -85,9 +85,13 @@ async def route_intent(
         entities = intent.get("entities", {})
         action = entities.get("action", "")
         fund = entities.get("fund", "")
+        amount = entities.get("amount")
         phone = session.get("phone", "")
-        if action in ("pause", "stepup"):
-            return handle_sip_action(phone, language, action, fund)
+        # Normalise synonyms: "start", "invest", "purchase" → "buy"
+        if action in ("start", "invest", "purchase", "new"):
+            action = "buy"
+        if action in ("pause", "stepup", "buy"):
+            return handle_sip_action(phone, language, action, fund, amount)
         # Fall through to conversation agent for other transaction types
 
     if intent_type == "off_topic":

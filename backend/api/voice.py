@@ -71,8 +71,7 @@ async def voice_twiml(request: Request):
     if to:
         # Dial the customer's phone — use Twilio number as caller ID
         settings = get_settings()
-        # Use the Twilio WhatsApp number (strip whatsapp: prefix) or a dedicated voice number
-        caller_id = settings.twilio_whatsapp_from.replace("whatsapp:", "")
+        caller_id = settings.twilio_voice_number or settings.twilio_whatsapp_from.replace("whatsapp:", "")
         logger.info("Voice TwiML — caller_id=%s, To=%s", caller_id, to)
         dial = response.dial(caller_id=caller_id)
         dial.number(to)

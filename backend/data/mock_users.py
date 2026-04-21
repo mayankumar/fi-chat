@@ -69,6 +69,16 @@ USERS = {
         "joined": "2022-07-30",
         "rm_name": "Arun Kumar",
     },
+    "whatsapp:+918473970793": {
+        "name": "Mayank Kumar",
+        "phone": "whatsapp:+918473970793",
+        "segment": "active",
+        "language": "en",
+        "age": 29,
+        "risk_profile": "aggressive",
+        "joined": "2023-09-01",
+        "rm_name": "Arun Kumar",
+    },
 }
 
 # -- Portfolio Holdings (for active/dormant users) ---------------------------
@@ -132,6 +142,17 @@ PORTFOLIOS = {
             {"fund": "360 One Quant Fund", "category": "Equity - Quant", "invested": 500000, "current": 580000, "units": 15000.0, "nav": 38.67},
         ],
     },
+    "whatsapp:+918473970793": {
+        "total_invested": 950000,
+        "current_value": 1230000,
+        "xirr": 21.4,
+        "holdings": [
+            {"fund": "Mirae Asset Large & Midcap Fund", "category": "Equity - Large & Mid", "invested": 300000, "current": 420000, "units": 1680.0, "nav": 250.0},
+            {"fund": "Parag Parikh Flexi Cap Fund", "category": "Equity - Flexi Cap", "invested": 250000, "current": 365000, "units": 4467.6, "nav": 81.7},
+            {"fund": "DSP Midcap Fund", "category": "Equity - Mid Cap", "invested": 200000, "current": 285000, "units": 1388.2, "nav": 205.3},
+            {"fund": "ICICI Pru NASDAQ 100 Index Fund", "category": "Equity - International", "invested": 200000, "current": 160000, "units": 5565.2, "nav": 28.75},
+        ],
+    },
 }
 
 # -- Active SIPs -------------------------------------------------------------
@@ -166,6 +187,11 @@ SIPS = {
         {"fund": "DSP Midcap Fund", "amount": 10000, "day": 18, "status": "active", "started": "2022-10-18"},
         {"fund": "Parag Parikh Flexi Cap Fund", "amount": 10000, "day": 18, "status": "active", "started": "2023-01-18"},
         {"fund": "360 One Quant Fund", "amount": 8000, "day": 3, "status": "active", "started": "2023-06-03"},
+    ],
+    "whatsapp:+918473970793": [
+        {"fund": "Mirae Asset Large & Midcap Fund", "amount": 10000, "day": 5, "status": "active", "started": "2023-09-05"},
+        {"fund": "Parag Parikh Flexi Cap Fund", "amount": 8000, "day": 5, "status": "active", "started": "2023-09-05"},
+        {"fund": "DSP Midcap Fund", "amount": 7000, "day": 15, "status": "active", "started": "2024-01-15"},
     ],
 }
 
@@ -234,6 +260,26 @@ GOALS = {
             "progress_pct": 25.7,
             "target_date": "2037-07-01",
             "monthly_sip": 50000,
+            "status": "on_track",
+        },
+    ],
+    "whatsapp:+918473970793": [
+        {
+            "name": "Early Retirement",
+            "target_corpus": 20000000,
+            "achieved": 1230000,
+            "progress_pct": 6.2,
+            "target_date": "2050-01-01",
+            "monthly_sip": 25000,
+            "status": "on_track",
+        },
+        {
+            "name": "International Travel Fund",
+            "target_corpus": 500000,
+            "achieved": 320000,
+            "progress_pct": 64.0,
+            "target_date": "2026-12-01",
+            "monthly_sip": 15000,
             "status": "on_track",
         },
     ],
