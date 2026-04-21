@@ -51,6 +51,10 @@ async def list_users():
         known_user = get_user(phone)
         handoff = get_handoff(phone)
 
+        is_tta = (
+            session.get("handoff_state") == "handoff_pending"
+            or bool(handoff and handoff.get("status") in ("pending", "in_progress"))
+        )
         users.append({
             "phone": phone,
             "phone_display": _short_phone(phone),
@@ -60,7 +64,7 @@ async def list_users():
             "consent_given": session.get("consent_given", False),
             "active_intent": session.get("active_intent"),
             "handoff_state": session.get("handoff_state", "bot_active"),
-            "is_tta": session.get("handoff_state") == "handoff_pending",
+            "is_tta": is_tta,
             "handoff_reason": handoff["reason"] if handoff else None,
             "handoff_urgency": handoff["urgency"] if handoff else None,
             "message_count": len(messages),

@@ -134,16 +134,6 @@ const TTA_RESPONSE = [
 ];
 const TTA_TOTAL = TTA_RESPONSE.reduce((s, r) => s + r.count, 0);
 
-// Demo queue (fills when backend has no TTA users)
-const DEMO_TTA_QUEUE: DemoQueueItem[] = [
-  { phone: "whatsapp:+919812340001", name: "Rohit Jain",       wait: "42s", reason: "Wants to step up SIP by 20%",     urgency: "medium" },
-  { phone: "whatsapp:+919812340002", name: "Aarti Deshmukh",   wait: "1m 08s", reason: "Confused about fund selection",  urgency: "high" },
-  { phone: "whatsapp:+919812340003", name: "Suresh Patel",     wait: "2m 14s", reason: "Portfolio underperforming query", urgency: "high" },
-  { phone: "whatsapp:+919812340004", name: "Meera Kapoor",     wait: "3m 56s", reason: "Retirement planning advice",     urgency: "medium" },
-];
-
-interface DemoQueueItem { phone: string; name: string; wait: string; reason: string; urgency: "high" | "medium" | "low"; }
-
 // ── Utilities ────────────────────────────────────────────────────────
 
 function cn(...classes: (string | boolean | undefined | null)[]) {
@@ -533,21 +523,24 @@ function Heatmap() {
       <div className="flex-1">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="none">
           {HEATMAP.map((row, rIdx) =>
-            row.map((val, cIdx) => (
-              <rect
-                key={`${rIdx}-${cIdx}`}
-                x={cIdx * (cellSize + gap)}
-                y={rIdx * (cellSize + gap)}
-                width={cellSize}
-                height={cellSize}
-                rx={3}
-                fill={colorFor(val)}
-                className="heatmap-cell"
-                style={{ animationDelay: `${(rIdx * 24 + cIdx) * 4}ms` }}
-              >
-                <title>{HEATMAP_DAYS[rIdx]} {cIdx}:00 — {val} chats</title>
-              </rect>
-            ))
+            row.map((val, cIdx) => {
+              const tooltip = HEATMAP_DAYS[rIdx] + " " + cIdx + ":00 — " + val + " chats";
+              return (
+                <rect
+                  key={`${rIdx}-${cIdx}`}
+                  x={cIdx * (cellSize + gap)}
+                  y={rIdx * (cellSize + gap)}
+                  width={cellSize}
+                  height={cellSize}
+                  rx={3}
+                  fill={colorFor(val)}
+                  className="heatmap-cell"
+                  style={{ animationDelay: `${(rIdx * 24 + cIdx) * 4}ms` }}
+                >
+                  <title>{tooltip}</title>
+                </rect>
+              );
+            })
           )}
         </svg>
         <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-mono">
@@ -1580,22 +1573,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* My Queue heading */}
-        <div className="px-5 py-3 mt-2 flex items-center justify-between shrink-0"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-center gap-1.5">
-            <Bell className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">My Queue</span>
-          </div>
-          {ttaCount > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
-              style={{ background: "rgba(239,68,68,0.1)" }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-urgent" />
-              <span className="text-[11px] font-bold text-red-400">{ttaCount} TTA</span>
-            </div>
-          )}
-        </div>
-
         {/* User list — filtered to RM assignments */}
         <div className="flex-1 overflow-y-auto sidebar-scroll py-2">
           {loading ? <UserListSkeleton /> : myUsers.length === 0 ? (
@@ -1664,27 +1641,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Demo queue preview (when real queue is small) */}
-          {!loading && myUsers.length < 3 && (
-            <div className="px-3 pt-2 mt-2 border-t border-white/5 space-y-px">
-              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest px-3 py-2">Queue preview</p>
-              {DEMO_TTA_QUEUE.slice(0, 4 - myUsers.length).map((d) => (
-                <div key={d.phone}
-                  className="w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 opacity-55">
-                  <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-[10px] font-bold bg-slate-600">
-                    {getInitials(d.name)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span className="text-[12px] font-semibold text-slate-400 truncate">{d.name}</span>
-                      <span className="text-[9px] text-slate-600 shrink-0 font-mono">{d.wait}</span>
-                    </div>
-                    <p className="text-[10px] text-slate-500 truncate">{d.reason}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Footer */}

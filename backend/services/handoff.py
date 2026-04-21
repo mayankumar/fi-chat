@@ -25,6 +25,29 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _load_from_disk() -> None:
+    """Rehydrate _handoffs from disk. For each phone, keep the latest record."""
+    latest: dict[str, dict[str, Any]] = {}
+    for path in HANDOFFS_DIR.glob("hoff_*.json"):
+        try:
+            record = json.loads(path.read_text())
+        except Exception as exc:
+            logger.warning("Skipping unreadable handoff %s: %s", path.name, exc)
+            continue
+        phone = record.get("phone")
+        if not phone:
+            continue
+        existing = latest.get(phone)
+        if not existing or record.get("created_at", "") > existing.get("created_at", ""):
+            latest[phone] = record
+    _handoffs.update(latest)
+    pending = sum(1 for r in _handoffs.values() if r.get("status") == "pending")
+    logger.info("Rehydrated %d handoffs from disk (%d pending)", len(_handoffs), pending)
+
+
+_load_from_disk()
+
+
 def create_handoff(
     phone: str,
     session: dict,
