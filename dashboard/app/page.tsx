@@ -13,7 +13,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://phylicia-subcerebral-laurie.ngrok-free.dev/api";
+const API_ROOT = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = `${API_ROOT.replace(/\/$/, "")}/api`;
 const HEADERS: Record<string, string> = { "ngrok-skip-browser-warning": "1" };
 
 // ── Demo Analytics (baseline metrics so dashboard never looks empty) ──
