@@ -70,7 +70,7 @@ DEBT_SUB = {
 FUND_MAP = {
     "debt_core":          "Bandhan Income Plus Arbitrage FOF",
     "debt_plus":          "ICICI Prudential Equity Savings Fund",
-    "gold":               "ICICI Pru Regular Gold Savings Fund (FOF)",
+    "gold":               "ICICI Pru Regular Gold Savings Fund FOF",
     "five_finger_quality":"UTI Flexi Cap Fund",
     "five_finger_value":  "ICICI Prudential Value Discovery Fund",
     "five_finger_garp":   "Parag Parikh Flexi Cap Fund",
