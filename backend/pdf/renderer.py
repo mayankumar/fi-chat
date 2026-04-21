@@ -150,6 +150,9 @@ def _build_portfolio_context(user: dict, portfolio: dict, sips: list | None, goa
             "drift_alert": g.get("drift_alert"),
         })
 
+    # Import lazily to avoid hard-wiring service imports at module load.
+    from backend.services.consent import TERMS_URL, PRIVACY_URL
+
     return {
         "user_name": user["name"],
         "joined": _fmt_date(user.get("joined")),
@@ -167,6 +170,8 @@ def _build_portfolio_context(user: dict, portfolio: dict, sips: list | None, goa
         "total_monthly_sip": _fmt_amount(total_monthly) if total_monthly else "",
         "total_monthly_sip_raw": total_monthly,
         "goals": goal_rows,
+        "terms_url": TERMS_URL,
+        "privacy_url": PRIVACY_URL,
     }
 
 

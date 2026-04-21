@@ -140,6 +140,26 @@
             text-align: justify;
         }
         .disclaimer-body p { margin-bottom: 8px; }
+        .disclaimer-body a { color: #0d7a3f; text-decoration: none; word-break: break-all; }
+        .links-table {
+            width: 100%;
+            margin: 6px 0 4px;
+            border-collapse: collapse;
+            font-size: 9.5px;
+        }
+        .links-table td {
+            padding: 5px 0;
+            border-bottom: 1px solid #eef2ef;
+        }
+        .link-label {
+            width: 35%;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-size: 8.5px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .link-url { color: #0d7a3f; }
     </style>
 </head>
 <body>
@@ -305,34 +325,50 @@
     </div>
 
     <div class="content disclaimer-page">
-        <div class="disclaimer-title">Disclaimer</div>
         <div class="disclaimer-body">
+            <div class="disclaimer-title">Risk Factors</div>
             <p>
-                This report is generated from records we hold against your registered folio as of {{ generated_on }}
-                and is intended only for the named recipient. Figures are point-in-time snapshots and will change
-                with market movement, corporate actions, and transaction settlement.
+                <strong>Mutual fund investments are subject to market risks. Read all scheme-related
+                documents carefully before investing.</strong> Past performance is not indicative of future
+                returns. The value of units of mutual fund schemes can go up as well as down based on factors
+                and forces affecting the capital markets, including changes in interest rates, volatility,
+                fund-specific risks, and macroeconomic conditions.
             </p>
+
+            <div class="disclaimer-title" style="margin-top:18px;">About This Report</div>
             <p>
+                This report is generated from records we hold against your registered folio as of
+                {{ generated_on }} and is intended only for the named recipient. Figures are point-in-time
+                snapshots and will change with market movement, corporate actions, and transaction settlement.
                 XIRR and gain figures are computed from your transaction history and current NAV.
-                Past performance is not indicative of future returns. Mutual fund investments are subject to market
-                risks — please read all scheme-related documents carefully before investing.
             </p>
             <p>
-                This document is a summary for convenience; it is not an account statement, contract note, or tax
-                document. For regulatory statements, refer to the Consolidated Account Statement (CAS) issued by
-                the registrar.
+                This document is a summary for convenience — it is not an account statement, contract note,
+                or tax document. For regulatory statements, refer to the Consolidated Account Statement (CAS)
+                issued by the registrar. Any allocation commentary, goal progress, or SIP suggestions here
+                are informational only and do not constitute personalised investment advice.
             </p>
+
+            <div class="disclaimer-title" style="margin-top:18px;">Legal &amp; Privacy</div>
             <p>
-                Any allocation commentary, goal progress, or SIP suggestions in this report are informational and
-                do not constitute personalised investment advice. For advice specific to your situation, please
-                connect with your Relationship Manager.
+                By using FundsIndia's WhatsApp advisory service, you agree to our Terms &amp; Conditions
+                and acknowledge our Privacy Policy.
             </p>
+            <table class="links-table">
+                <tr>
+                    <td class="link-label">Terms &amp; Conditions</td>
+                    <td class="link-url"><a href="{{ terms_url }}">{{ terms_url }}</a></td>
+                </tr>
+                <tr>
+                    <td class="link-label">Privacy Policy</td>
+                    <td class="link-url"><a href="{{ privacy_url }}">{{ privacy_url }}</a></td>
+                </tr>
+            </table>
 
             <div class="disclaimer-title" style="margin-top:18px;">Need Help?</div>
             <p>
-                Your Relationship Manager is <strong>{{ rm_name }}</strong>. You can reach the FundsIndia support
-                team through the contact options shared with you on WhatsApp, or reply to this chat to request a
-                callback.
+                Your Relationship Manager is <strong>{{ rm_name }}</strong>. Reply on WhatsApp to request a
+                callback, or reach the FundsIndia support team through the contact options shared with you.
             </p>
         </div>
     </div>
