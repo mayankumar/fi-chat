@@ -4,427 +4,209 @@
     <meta charset="UTF-8">
     <title>{{ goal_name }} — FundsIndia Advisory</title>
     <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        @page { size: A4; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', -apple-system, sans-serif;
             color: #1a1a2e;
-            font-size: 11px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.35;
             background: #fff;
         }
-
-        .page {
-            width: 210mm;
-            padding: 0;
-        }
+        .page { width: 210mm; min-height: 297mm; display: flex; flex-direction: column; }
 
         /* ── Header ── */
         .header {
             background: linear-gradient(135deg, #0d7a3f 0%, #15a352 50%, #1db954 100%);
             color: white;
-            padding: 26px 32px 22px;
+            padding: 22px 28px 18px;
             position: relative;
             overflow: hidden;
         }
-
-        .header::after {
+        .header::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 60%;
-            height: 200%;
-            background: rgba(255,255,255,0.05);
+            top: -40%;
+            right: -15%;
+            width: 50%;
+            height: 180%;
+            background: rgba(255,255,255,0.04);
             border-radius: 50%;
         }
-
-        .header-brand {
-            font-size: 10px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0.85;
-            margin-bottom: 4px;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .header-subtitle {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .header-meta {
-            margin-top: 14px;
-            display: flex;
-            gap: 24px;
-        }
-
-        .meta-item {
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .header-brand { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; opacity: 0.8; margin-bottom: 3px; }
+        .header-title { font-size: 22px; font-weight: 700; }
+        .header-subtitle { font-size: 11px; opacity: 0.85; margin-top: 1px; }
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            padding: 8px 14px;
             text-align: center;
         }
-
-        .meta-value {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .meta-label {
-            font-size: 9px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .badge-value { font-size: 18px; font-weight: 700; }
+        .badge-label { font-size: 8px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header-meta { margin-top: 12px; display: flex; gap: 28px; }
+        .meta-item { }
+        .meta-value { font-size: 14px; font-weight: 700; }
+        .meta-label { font-size: 8px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* ── Content ── */
-        .content {
-            padding: 16px 32px;
-        }
+        .content { padding: 14px 28px 10px; flex: 1; }
 
         /* ── Cards ── */
         .card {
             background: #f8faf9;
             border: 1px solid #e8f0ec;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
         }
-
         .card-title {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             color: #0d7a3f;
             margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
+        .card-title .icon { font-size: 14px; }
 
-        .card-title .icon {
-            font-size: 16px;
-        }
-
-        /* ── SIP Strategy ── */
-        .strategy-row {
-            display: flex;
-            gap: 16px;
-        }
-
+        /* ── Strategy Row ── */
+        .strategy-row { display: flex; gap: 12px; align-items: stretch; }
         .strategy-col {
             flex: 1;
+            background: white;
+            border: 1px solid #e8f0ec;
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: center;
         }
-
-        .sip-amount {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin: 2px 0;
-        }
-
-        .sip-subtitle {
-            color: #666;
-            font-size: 10px;
-        }
-
-        .vs-divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-        }
-
+        .strategy-label { font-size: 10px; font-weight: 600; color: #0d7a3f; margin-bottom: 2px; }
+        .strategy-amount { font-size: 22px; font-weight: 700; color: #1a1a2e; margin: 2px 0; }
+        .strategy-sub { color: #888; font-size: 9px; }
+        .vs-divider { display: flex; align-items: center; }
         .vs-badge {
-            display: inline-block;
-            background: #fff3e0;
-            color: #e65100;
-            font-size: 9px;
-            font-weight: 600;
-            padding: 2px 7px;
-            border-radius: 20px;
+            background: #fff3e0; color: #e65100;
+            font-size: 8px; font-weight: 700;
+            padding: 3px 8px; border-radius: 20px;
         }
+
+        /* ── Two Column Layout ── */
+        .two-col { display: flex; gap: 8px; }
+        .two-col > * { flex: 1; }
 
         /* ── Allocation Bar ── */
-        .alloc-bar {
-            display: flex;
-            height: 22px;
-            border-radius: 11px;
-            overflow: hidden;
-            margin: 8px 0 6px;
-        }
-
+        .alloc-bar { display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin: 6px 0 4px; }
         .alloc-equity {
             background: linear-gradient(90deg, #0d7a3f, #1db954);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 9px;
-            font-weight: 600;
+            color: white; font-size: 8px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .alloc-debt {
-            background: linear-gradient(90deg, #1976d2, #42a5f5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 9px;
-            font-weight: 600;
+            background: linear-gradient(90deg, #1565c0, #42a5f5);
+            color: white; font-size: 8px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .alloc-gold {
             background: linear-gradient(90deg, #f9a825, #fdd835);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5d4037;
-            font-size: 9px;
-            font-weight: 600;
+            color: #5d4037; font-size: 8px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .alloc-legend {
-            display: flex;
-            gap: 14px;
-            margin-top: 4px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 9px;
-            color: #555;
-        }
-
-        .legend-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-        }
+        .alloc-legend { display: flex; gap: 12px; margin-top: 3px; }
+        .legend-item { display: flex; align-items: center; gap: 3px; font-size: 8px; color: #666; }
+        .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
 
         /* ── Fund Table ── */
-        .fund-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-
+        .fund-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
         .fund-table th {
-            text-align: left;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-            padding: 5px 0;
-            border-bottom: 1px solid #e0e0e0;
+            text-align: left; font-size: 8px; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #999; padding: 4px 0;
+            border-bottom: 1px solid #ddd;
         }
-
-        .fund-table td {
-            padding: 5px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 10px;
-        }
-
-        .fund-table .fund-name {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
-        .fund-table .fund-category {
-            color: #0d7a3f;
-            font-size: 9px;
-        }
-
-        .fund-table .fund-amount {
-            font-weight: 600;
-            text-align: right;
-            color: #1a1a2e;
-        }
+        .fund-table td { padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 9px; }
+        .fund-name { font-weight: 600; color: #1a1a2e; }
+        .fund-category { color: #0d7a3f; font-size: 8px; }
+        .fund-amount { font-weight: 600; text-align: right; color: #1a1a2e; }
 
         /* ── Milestones ── */
-        .milestone-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 6px;
-        }
-
+        .milestone-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
         .milestone-item {
-            flex: 1 1 45%;
+            flex: 1 1 30%;
             background: white;
             border: 1px solid #e8f0ec;
             border-radius: 6px;
-            padding: 6px 8px;
+            padding: 5px 7px;
         }
-
-        .milestone-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: #0d7a3f;
-            margin-bottom: 1px;
-        }
-
-        .milestone-detail {
-            font-size: 9px;
-            color: #666;
-        }
-
-        .milestone-detail strong {
-            color: #1a1a2e;
-        }
-
-        /* ── Insight Box ── */
-        .insight-box {
-            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-            border-left: 4px solid #0d7a3f;
-            border-radius: 0 6px 6px 0;
-            padding: 10px 14px;
-            margin: 10px 0;
-        }
-
-        .insight-title {
-            font-weight: 700;
-            color: #0d7a3f;
-            font-size: 11px;
-            margin-bottom: 2px;
-        }
-
-        .insight-text {
-            color: #333;
-            font-size: 10px;
-        }
+        .milestone-label { font-size: 9px; font-weight: 600; color: #0d7a3f; }
+        .milestone-detail { font-size: 8px; color: #666; }
+        .milestone-detail strong { color: #1a1a2e; }
 
         /* ── Bottom Section ── */
-        .bottom-section {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        /* ── CTA Section ── */
-        .cta-section {
-            background: #f8faf9;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
+        .bottom-row { display: flex; gap: 8px; margin-top: 8px; }
+        .insight-box {
             flex: 1;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-left: 3px solid #0d7a3f;
+            border-radius: 0 6px 6px 0;
+            padding: 8px 12px;
         }
+        .insight-title { font-weight: 700; color: #0d7a3f; font-size: 10px; margin-bottom: 2px; }
+        .insight-text { color: #444; font-size: 9px; }
 
-        .cta-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-
-        .cta-text {
-            color: #666;
-            font-size: 9px;
-            margin-bottom: 8px;
-        }
-
-        .cta-services {
-            display: flex;
-            justify-content: center;
-            gap: 14px;
-        }
-
-        .service-item {
-            text-align: center;
-        }
-
-        .service-icon {
-            font-size: 18px;
-            margin-bottom: 1px;
-        }
-
-        .service-label {
-            font-size: 8px;
-            color: #555;
-        }
-
-        /* ── Trust Bar ── */
-        .trust-section {
+        .trust-box {
+            flex: 1;
             background: #fafafa;
-            border-radius: 8px;
-            padding: 12px;
-            flex: 1;
+            border-radius: 6px;
+            padding: 8px 12px;
             display: flex;
             flex-wrap: wrap;
+            gap: 4px;
             align-content: center;
-            justify-content: center;
-            gap: 8px;
         }
-
-        .trust-item {
-            text-align: center;
-            flex: 1 1 40%;
-        }
-
-        .trust-value {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0d7a3f;
-        }
-
-        .trust-label {
-            font-size: 8px;
-            color: #888;
-        }
-
-        /* ── Footer ── */
-        .footer {
-            margin-top: 10px;
-            padding: 10px 32px;
-            border-top: 1px solid #e0e0e0;
-            color: #999;
-            font-size: 7.5px;
-            line-height: 1.3;
-        }
-
-        .footer-brand {
-            font-weight: 600;
-            color: #0d7a3f;
-            font-size: 9px;
-            margin-bottom: 2px;
-        }
+        .trust-item { flex: 1 1 45%; text-align: center; }
+        .trust-value { font-size: 11px; font-weight: 700; color: #0d7a3f; }
+        .trust-label { font-size: 7px; color: #999; }
 
         /* ── Defaults Note ── */
         .defaults-note {
             background: #fff8e1;
-            border-radius: 6px;
-            padding: 7px 10px;
-            margin-top: 8px;
-            font-size: 9px;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-top: 6px;
+            font-size: 8px;
             color: #5d4037;
         }
+        .defaults-note strong { color: #e65100; }
 
-        .defaults-note strong {
-            color: #e65100;
+        /* ── Footer ── */
+        .footer {
+            padding: 8px 28px;
+            border-top: 1px solid #e0e0e0;
+            color: #aaa;
+            font-size: 7px;
+            line-height: 1.3;
         }
+        .footer-brand { font-weight: 600; color: #0d7a3f; font-size: 8px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
     <div class="page">
         <!-- Header -->
         <div class="header">
-            <div class="header-brand">FUNDSINDIA ADVISORY</div>
-            <div class="header-title">{{ goal_name }}</div>
-            <div class="header-subtitle">Your Personalized Investment Plan</div>
-
+            <div class="header-top">
+                <div>
+                    <div class="header-brand">FundsIndia Advisory</div>
+                    <div class="header-title">{{ goal_name }}</div>
+                    <div class="header-subtitle">Your Personalized Investment Plan</div>
+                </div>
+                <div class="header-badge">
+                    <div class="badge-value">{{ sip_required }}</div>
+                    <div class="badge-label">Monthly SIP</div>
+                </div>
+            </div>
             <div class="header-meta">
                 <div class="meta-item">
                     <div class="meta-value">{{ target_amount }}</div>
@@ -432,7 +214,7 @@
                 </div>
                 <div class="meta-item">
                     <div class="meta-value">{{ future_value }}</div>
-                    <div class="meta-label">Inflation-Adj.</div>
+                    <div class="meta-label">Inflation-Adjusted</div>
                 </div>
                 <div class="meta-item">
                     <div class="meta-value">{{ tenure_years }} yrs</div>
@@ -442,59 +224,66 @@
                     <div class="meta-value">{{ risk_label }}</div>
                     <div class="meta-label">Risk Profile</div>
                 </div>
+                <div class="meta-item">
+                    <div class="meta-value">{{ expected_return }}/yr</div>
+                    <div class="meta-label">Exp. Return</div>
+                </div>
             </div>
         </div>
 
-        <!-- Content -->
         <div class="content">
-            <!-- Strategy Card — side by side -->
+            <!-- Strategy Card -->
             <div class="card">
+                <div class="card-title"><span class="icon">💰</span> Investment Strategy</div>
                 <div class="strategy-row">
                     <div class="strategy-col">
-                        <div class="card-title"><span class="icon">💰</span> Set-and-Forget</div>
-                        <div class="sip-subtitle">Fixed monthly SIP for {{ tenure_years }} years</div>
-                        <div class="sip-amount">{{ sip_required }}/mo</div>
-                        <div class="sip-subtitle">{{ expected_return }}/yr return ({{ risk_label }})</div>
+                        <div class="strategy-label">Set-and-Forget</div>
+                        <div class="strategy-amount">{{ sip_required }}/mo</div>
+                        <div class="strategy-sub">Fixed SIP for {{ tenure_years }} years</div>
                     </div>
                     <div class="vs-divider"><div class="vs-badge">VS</div></div>
                     <div class="strategy-col">
-                        <div class="card-title"><span class="icon">🚀</span> Step-Up Strategy</div>
-                        <div class="sip-subtitle">Start low, increase {{ stepup_rate }}% yearly</div>
-                        <div class="sip-amount">{{ stepup_base }}/mo</div>
-                        <div class="sip-subtitle">Growing to {{ stepup_final }}/mo by yr {{ tenure_years }}</div>
+                        <div class="strategy-label">Step-Up ({{ stepup_rate }}%/yr)</div>
+                        <div class="strategy-amount">{{ stepup_base }}/mo</div>
+                        <div class="strategy-sub">Start low, grow annually</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Allocation Card -->
+            <!-- Allocation + Funds (side by side) -->
+            <div class="two-col">
+                <!-- Allocation -->
+                <div class="card">
+                    <div class="card-title"><span class="icon">📊</span> Asset Allocation</div>
+                    <div class="alloc-bar">
+                        {% if equity_pct > 0 %}<div class="alloc-equity" style="width:{{ equity_pct }}%">Equity {{ equity_pct }}%</div>{% endif %}
+                        {% if debt_pct > 0 %}<div class="alloc-debt" style="width:{{ debt_pct }}%">Debt {{ debt_pct }}%</div>{% endif %}
+                        {% if gold_pct > 0 %}<div class="alloc-gold" style="width:{{ gold_pct }}%">Gold {{ gold_pct }}%</div>{% endif %}
+                    </div>
+                    <div class="alloc-legend">
+                        {% if equity_pct > 0 %}<div class="legend-item"><div class="legend-dot" style="background:#0d7a3f"></div>Equity</div>{% endif %}
+                        {% if debt_pct > 0 %}<div class="legend-item"><div class="legend-dot" style="background:#1565c0"></div>Debt</div>{% endif %}
+                        {% if gold_pct > 0 %}<div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>Gold</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Milestones -->
+                <div class="card">
+                    <div class="card-title"><span class="icon">🎯</span> Your Milestones</div>
+                    <div class="milestone-grid">
+                        {% for m in milestones[:4] %}
+                        <div class="milestone-item">
+                            <div class="milestone-label">{{ m.label }}</div>
+                            <div class="milestone-detail"><strong>{{ m.target }}</strong> in {{ m.time }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fund Table -->
             <div class="card">
-                <div class="card-title"><span class="icon">📊</span> Portfolio Allocation</div>
-
-                <div class="alloc-bar">
-                    {% if equity_pct > 0 %}
-                    <div class="alloc-equity" style="width: {{ equity_pct }}%">Equity {{ equity_pct }}%</div>
-                    {% endif %}
-                    {% if debt_pct > 0 %}
-                    <div class="alloc-debt" style="width: {{ debt_pct }}%">Debt {{ debt_pct }}%</div>
-                    {% endif %}
-                    {% if gold_pct > 0 %}
-                    <div class="alloc-gold" style="width: {{ gold_pct }}%">Gold {{ gold_pct }}%</div>
-                    {% endif %}
-                </div>
-
-                <div class="alloc-legend">
-                    {% if equity_pct > 0 %}
-                    <div class="legend-item"><div class="legend-dot" style="background:#0d7a3f"></div> Equity {{ equity_pct }}%</div>
-                    {% endif %}
-                    {% if debt_pct > 0 %}
-                    <div class="legend-item"><div class="legend-dot" style="background:#1976d2"></div> Debt {{ debt_pct }}%</div>
-                    {% endif %}
-                    {% if gold_pct > 0 %}
-                    <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div> Gold {{ gold_pct }}%</div>
-                    {% endif %}
-                </div>
-
-                <!-- Fund Table -->
+                <div class="card-title"><span class="icon">📂</span> Recommended Funds</div>
                 <table class="fund-table">
                     <thead>
                         <tr>
@@ -506,8 +295,8 @@
                         {% for fund in funds %}
                         <tr>
                             <td>
-                                <div class="fund-name">{{ fund.name }}</div>
-                                <div class="fund-category">{{ fund.category }}</div>
+                                <span class="fund-name">{{ fund.name }}</span>
+                                <span class="fund-category"> · {{ fund.category }}</span>
                             </td>
                             <td class="fund-amount">{{ fund.amount }}</td>
                         </tr>
@@ -516,50 +305,16 @@
                 </table>
             </div>
 
-            <!-- Milestones Card -->
-            <div class="card">
-                <div class="card-title"><span class="icon">🎯</span> Your Milestones</div>
-                <div class="milestone-grid">
-                    {% for m in milestones %}
-                    <div class="milestone-item">
-                        <div class="milestone-label">{{ m.label }}</div>
-                        <div class="milestone-detail"><strong>{{ m.target }}</strong> in {{ m.time }} @ {{ m.sip }}/mo</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Insight Box -->
-            <div class="insight-box">
-                <div class="insight-title">💡 Did you know?</div>
-                <div class="insight-text">
-                    Starting just 3 years earlier can reduce your monthly SIP by up to 25%.
-                    The power of compounding works best when you give it time!
-                </div>
-            </div>
-
-            <!-- CTA + Trust side by side -->
-            <div class="bottom-section">
-                <div class="cta-section">
-                    <div class="cta-title">Get Expert Guidance</div>
-                    <div class="cta-text">Our advisors can help you fine-tune this plan</div>
-                    <div class="cta-services">
-                        <div class="service-item">
-                            <div class="service-icon">🎯</div>
-                            <div class="service-label">Goal Planning</div>
-                        </div>
-                        <div class="service-item">
-                            <div class="service-icon">📋</div>
-                            <div class="service-label">Portfolio Review</div>
-                        </div>
-                        <div class="service-item">
-                            <div class="service-icon">💼</div>
-                            <div class="service-label">Investment Advice</div>
-                        </div>
+            <!-- Bottom Row: Insight + Trust -->
+            <div class="bottom-row">
+                <div class="insight-box">
+                    <div class="insight-title">💡 Did you know?</div>
+                    <div class="insight-text">
+                        Starting just 3 years earlier can reduce your monthly SIP by up to 25%.
+                        The power of compounding works best when you give it time!
                     </div>
                 </div>
-
-                <div class="trust-section">
+                <div class="trust-box">
                     <div class="trust-item">
                         <div class="trust-value">4.6 ★</div>
                         <div class="trust-label">Google Rating</div>
@@ -574,15 +329,14 @@
                     </div>
                     <div class="trust-item">
                         <div class="trust-value">5L+</div>
-                        <div class="trust-label">Customers</div>
+                        <div class="trust-label">Happy Customers</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Defaults Note -->
             {% if defaults_used %}
             <div class="defaults-note">
-                <strong>Note:</strong> This plan uses some default assumptions —
+                <strong>Note:</strong> This plan uses default assumptions —
                 {% for d in defaults_used %}{{ d }}{% if not loop.last %}, {% endif %}{% endfor %}.
                 Chat with us to personalize further!
             </div>
@@ -594,7 +348,7 @@
             <div class="footer-brand">FundsIndia — A Subsidiary of Uttam Financial Services Ltd.</div>
             Mutual fund investments are subject to market risks. Read all scheme related documents carefully before investing.
             Past performance is not indicative of future results. This is a personalized illustration, not a guaranteed return.
-            AMFI Registered Mutual Fund Distributor | ARN-0845
+            AMFI Registered Mutual Fund Distributor | ARN-0845 | SEBI Registered Investment Advisor
         </div>
     </div>
 </body>

@@ -57,16 +57,21 @@ async def route_intent(
 
     if intent_type in ("goal_discovery", "risk_assessment"):
         logger.info("Routing to GOAL DISCOVERY handler")
-        text = await handle_goal_discovery(message, history, language, session)
-        return _wrap(text)
+        result = await handle_goal_discovery(message, history, language, session)
+        # goal_discovery returns structured dict when plan is generated, plain text when asking questions
+        if isinstance(result, dict):
+            return result
+        return _wrap(result)
 
     # Route to goal discovery if user is mid-flow (collecting params)
     # OR if a plan exists and user might be modifying it (let the handler decide)
     flow = session.get("flow_state", {})
     if flow.get("goal_collected") and not flow.get("current_plan"):
         logger.info("Routing to GOAL DISCOVERY handler (mid-flow, collecting)")
-        text = await handle_goal_discovery(message, history, language, session)
-        return _wrap(text)
+        result = await handle_goal_discovery(message, history, language, session)
+        if isinstance(result, dict):
+            return result
+        return _wrap(result)
 
     if intent_type == "portfolio_query":
         logger.info("Routing to PORTFOLIO handler")

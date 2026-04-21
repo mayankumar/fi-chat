@@ -18,6 +18,7 @@ import anthropic
 from backend.config import get_settings
 from backend.recommender.engine import generate_plan
 from backend.recommender.constants import SIP_MINIMUM
+from backend.services.twilio_sender import TEMPLATE_POST_PDF
 
 logger = logging.getLogger("fi-chat.goal_discovery")
 
@@ -169,9 +170,9 @@ async def handle_goal_discovery(
     flow["current_plan"] = plan
     session["flow_state"] = flow
 
-    # Generate text summary
+    # Generate text summary — return structured response with buttons
     summary = _format_plan_summary(plan, language, is_modification)
-    return summary
+    return {"messages": [summary], "template_name": TEMPLATE_POST_PDF}
 
 
 def _default_next_question(collected: dict, language: str) -> str:
@@ -271,8 +272,11 @@ def _format_plan_summary(plan: dict, language: str, is_modification: bool = Fals
         f"{fund_text}"
     )
 
-    # Message 5: CTA
+    # Message 5: Disclaimer + CTA
     msg5 = (
+        f"⚠️ _Mutual fund investments are subject to market risks. "
+        f"This is an indicative plan, not guaranteed returns. "
+        f"Consult our SEBI-registered advisors before investing._\n\n"
         f"✅ *Your personalized plan is ready!*\n\n"
         f"Want me to generate a detailed PDF report? 📄\n"
         f"Or connect with our expert advisor to get started? 🧑‍💼"
