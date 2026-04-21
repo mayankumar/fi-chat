@@ -115,7 +115,7 @@ async def generate_action(body: GenerateActionRequest):
     _tokens[token] = action_data
 
     settings = get_settings()
-    base = settings.media_base_url.rstrip("/") if settings.media_base_url else "http://localhost:3000"
+    base = (settings.dashboard_base_url or "http://localhost:3000").rstrip("/")
     action_url = f"{base}/action/{token}"
 
     logger.info("Action token generated: %s action=%s phone=%s", token[:8], body.action, body.phone)
