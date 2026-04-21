@@ -163,17 +163,13 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
 
         # 2. Consent gate
         if not session["consent_given"]:
-            consent_result = check_consent_reply(message)
-
-            if consent_result and consent_result["accepted"]:
+            if check_consent_reply(message):
                 session["consent_given"] = True
                 session["consent_version"] = CONSENT_VERSION
-                # Auto-detect segment from mock user data
+                # Segment comes from the user record if we have one; unknown
+                # numbers default to "new" and will see the starter menu.
                 known_user = get_user(phone)
-                if known_user:
-                    session["user_segment"] = known_user["segment"]
-                else:
-                    session["user_segment"] = consent_result["segment"]
+                session["user_segment"] = known_user["segment"] if known_user else "new"
                 _store.save(phone)
                 logger.info("[%s] CONSENT — accepted, segment=%s (known=%s)", tag, session["user_segment"], known_user is not None)
 

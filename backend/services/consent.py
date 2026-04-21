@@ -1,8 +1,6 @@
 """T&C disclaimer gate — must be accepted before bot interaction."""
 from __future__ import annotations
 
-from typing import Optional
-
 from backend.services.twilio_sender import TEMPLATE_CONSENT
 
 CONSENT_VERSION = "1.1"
@@ -63,14 +61,16 @@ def get_disclaimer(language: str) -> dict:
     }
 
 
-def check_consent_reply(message: str) -> Optional[dict]:
-    """Check if message is a consent reply (button tap or typed text)."""
+def check_consent_reply(message: str) -> bool:
+    """Return True if the user's reply accepts consent (either button or typed text).
+
+    Segment detection happens later via phone lookup, so we no longer need to
+    thread a self-reported segment through from the button payload.
+    """
     msg = message.strip().lower()
-
-    # Button payloads (from Content API ButtonPayload)
-    if msg in ("consent_yes", "yes", "let's start!", "✅ let's start!", "lets start"):
-        return {"accepted": True, "segment": "new"}
-    if msg in ("consent_expert", "expert", "i'm a pro", "🔬 i'm a pro", "im a pro"):
-        return {"accepted": True, "segment": "active"}
-
-    return None
+    return msg in {
+        # "Let's start" button / typed equivalents
+        "consent_yes", "yes", "let's start!", "✅ let's start!", "lets start",
+        # "I'm a Pro" button / typed equivalents — both buttons accept consent
+        "consent_expert", "expert", "i'm a pro", "🔬 i'm a pro", "im a pro",
+    }
