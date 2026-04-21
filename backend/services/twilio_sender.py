@@ -42,6 +42,21 @@ TEMPLATE_STOCK_REDIRECT = "fi_stock_redirect_v1"
 TEMPLATE_TTA = "fi_tta_options_v1"
 TEMPLATE_POST_PDF = "fi_post_pdf_v1"
 TEMPLATE_PLAN_CTA = "fi_plan_cta_v1"
+TEMPLATE_GOAL_TYPE_PICKER = "fi_goal_type_picker_v1"
+
+# Templates with >3 items use WhatsApp list-picker (up to 10 items).
+# Keyed by template name -> {"button": str (label to open the list), "items": [...]}
+_LIST_PICKER_DEFINITIONS = {
+    TEMPLATE_GOAL_TYPE_PICKER: {
+        "button": "Pick a goal",
+        "items": [
+            {"title": "Retirement",         "id": "goal_retirement",     "description": "Build a corpus for after you stop working"},
+            {"title": "Child's Education",  "id": "goal_education",      "description": "Plan for school, college, or higher studies"},
+            {"title": "House / Car / Travel", "id": "goal_consumption",  "description": "A specific purchase or big-ticket plan"},
+            {"title": "Wealth Creation",    "id": "goal_wealth",         "description": "Grow your money over the long run"},
+        ],
+    },
+}
 
 _TEMPLATE_DEFINITIONS = {
     TEMPLATE_CONSENT: [
@@ -138,11 +153,18 @@ class TwilioSender:
             except TwilioRestException as exc:
                 logger.warning("Content API send failed (%s) — falling back to text", exc.msg)
 
-        # Fallback: plain text with button hints
-        buttons = _TEMPLATE_DEFINITIONS.get(template_name, [])
-        footer = "\n\n" + "\n".join(
-            "👉 Reply *{}*".format(b["title"]) for b in buttons
-        )
+        # Fallback: plain text with numbered option hints.
+        list_def = _LIST_PICKER_DEFINITIONS.get(template_name)
+        if list_def:
+            opts = list_def["items"]
+            footer = "\n\n" + "\n".join(
+                f"*{i}.* {it['title']}" for i, it in enumerate(opts, 1)
+            )
+        else:
+            buttons = _TEMPLATE_DEFINITIONS.get(template_name, [])
+            footer = "\n\n" + "\n".join(
+                "👉 Reply *{}*".format(b["title"]) for b in buttons
+            )
         await self.send_text(to, body + footer)
 
     async def send_multi(
@@ -201,18 +223,48 @@ class TwilioSender:
         return _template_cache.get(template_name) or None
 
     def _get_or_create_template(self, template_name: str) -> str:
-        """Synchronous: find or create a Content API template. Returns content SID."""
+        """Synchronous: find or create a Content API template. Returns content SID.
+
+        Picks list-picker vs quick-reply based on which definition table the
+        template lives in.
+        """
+        is_list = template_name in _LIST_PICKER_DEFINITIONS
         buttons = _TEMPLATE_DEFINITIONS.get(template_name)
-        if not buttons:
+        list_def = _LIST_PICKER_DEFINITIONS.get(template_name)
+        if not buttons and not list_def:
             raise ValueError(f"Unknown template: {template_name}")
 
-        # Check if template already exists
+        # Reuse if already created.
         for content in self._client.content.v1.contents.list():
             if content.friendly_name == template_name:
                 logger.info("Reusing existing Content template: %s (%s)", template_name, content.sid)
                 return content.sid
 
-        # Create new template using SDK typed objects (same pattern as POC)
+        if is_list:
+            items = [
+                ContentList.ListItem({
+                    "item": item["title"],
+                    "id": item["id"],
+                    "description": item.get("description", ""),
+                })
+                for item in list_def["items"]
+            ]
+            request = ContentList.ContentCreateRequest({
+                "friendly_name": template_name,
+                "language": "en",
+                "types": ContentList.Types({
+                    "twilio/list-picker": ContentList.TwilioListPicker({
+                        "body": "{{1}}",
+                        "button": list_def["button"],
+                        "items": items,
+                    })
+                }),
+            })
+            content = self._client.content.v1.contents.create(request)
+            logger.info("Created list-picker template: %s (%s)", template_name, content.sid)
+            return content.sid
+
+        # Quick-reply path (existing behaviour).
         actions = [
             ContentList.QuickReplyAction({"title": b["title"], "id": b["id"]})
             for b in buttons

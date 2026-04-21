@@ -23,7 +23,7 @@ from backend.data.mock_users import get_user
 from backend.pdf.renderer import generate_pdf, get_pdf_url
 from backend.recommender.engine import generate_plan
 from backend.recommender.constants import SIP_MINIMUM
-from backend.services.twilio_sender import TEMPLATE_PLAN_CTA
+from backend.services.twilio_sender import TEMPLATE_PLAN_CTA, TEMPLATE_GOAL_TYPE_PICKER
 
 _STATIC_PDF_DIR = Path("backend/static/pdfs")
 
@@ -208,11 +208,18 @@ async def handle_goal_discovery(
     is_modification = result.get("is_modification", False)
 
     if not ready:
-        # Ask next question
         question = result.get("next_question", "")
-        if not question:
-            question = _default_next_question(collected, language)
-        return question
+        if question:
+            return question
+        # No question from Haiku — fall back. When goal_type is still unknown,
+        # present a WhatsApp list-picker with the four canonical goals so the
+        # user taps instead of typing.
+        if not collected.get("goal_type"):
+            return {
+                "messages": [_fallback("goal_type", language)],
+                "template_name": TEMPLATE_GOAL_TYPE_PICKER,
+            }
+        return _default_next_question(collected, language)
 
     # ── Plan generation ───────────────────────────────────────────
     if is_modification:
