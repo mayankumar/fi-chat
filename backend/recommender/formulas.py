@@ -35,6 +35,19 @@ def sip_required(fv: float, annual_return: float, months: int) -> float:
     return fv * r / factor
 
 
+def sip_future_value(sip: float, annual_return: float, months: int) -> float:
+    """Future value of a monthly SIP (annuity-due, Indian convention).
+
+    FV = SIP × [((1+r)^n − 1) / r] × (1+r)
+    """
+    if sip <= 0 or months <= 0:
+        return 0.0
+    r = annual_return / 12
+    if r == 0:
+        return sip * months
+    return sip * ((1 + r) ** months - 1) / r * (1 + r)
+
+
 def nper_months(fv: float, sip: float, annual_return: float) -> int:
     """Months needed to reach FV with fixed monthly SIP.
 

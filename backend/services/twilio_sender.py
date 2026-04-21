@@ -39,6 +39,7 @@ TEMPLATE_GREETING_MENU = "fi_greeting_menu_v1"
 TEMPLATE_STOCK_REDIRECT = "fi_stock_redirect_v1"
 TEMPLATE_TTA = "fi_tta_options_v1"
 TEMPLATE_POST_PDF = "fi_post_pdf_v1"
+TEMPLATE_PLAN_CTA = "fi_plan_cta_v1"
 
 _TEMPLATE_DEFINITIONS = {
     TEMPLATE_CONSENT: [
@@ -63,6 +64,9 @@ _TEMPLATE_DEFINITIONS = {
         {"title": "💬 Talk to Advisor", "id": "action_advisor"},
         {"title": "🔄 Modify Plan", "id": "action_modify_plan"},
         {"title": "✅ Looks Good!", "id": "action_plan_ok"},
+    ],
+    TEMPLATE_PLAN_CTA: [
+        {"title": "💬 Talk to Advisor", "id": "action_advisor"},
     ],
 }
 
