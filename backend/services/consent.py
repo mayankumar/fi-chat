@@ -5,40 +5,48 @@ from typing import Optional
 
 from backend.services.twilio_sender import TEMPLATE_CONSENT
 
-CONSENT_VERSION = "1.0"
+CONSENT_VERSION = "1.1"
 
-# -- Disclaimer: sent as 2 separate messages + quick-reply buttons --
+# Legal links surfaced in the consent message.
+# Update these if/when FundsIndia provides canonical URLs.
+TERMS_URL = "https://www.fundsindia.com/terms"
+PRIVACY_URL = "https://www.fundsindia.com/privacy-policy"
+
 
 _WELCOME_EN = (
-    "Hey there! 👋 Welcome to *FundsIndia* — India's trusted investment platform.\n\n"
-    "I'm *Finn*, your personal AI investment assistant 🤖✨\n\n"
-    "I'm here to help you plan your financial goals, understand mutual funds, "
-    "and connect you with our *SEBI-registered advisors* whenever you need expert guidance."
+    "Hi there 👋  Welcome to *FundsIndia*.\n\n"
+    "I'm *Finn* — your personal investment assistant. "
+    "I can help you plan goals, review your portfolio, step-up or pause SIPs, "
+    "answer mutual-fund questions, and loop in a SEBI-registered advisor whenever you want one.\n\n"
+    "Tell me what's on your mind, or just say *Hi* to see what I can do."
 )
 
 _TERMS_EN = (
-    "📋 *Quick note before we start:*\n\n"
-    "• I provide *educational & informational* guidance\n"
-    "• For personalized advice, our *expert advisors* are just a tap away 🧑‍💼\n"
-    "• Mutual fund investments are subject to market risks\n"
-    "• Past performance ≠ future returns\n\n"
-    "Your trust matters to us 🤝"
+    "*Before we begin* — a quick heads-up:\n\n"
+    "• I share educational and informational guidance; for personalised advice our human advisors step in\n"
+    "• Mutual-fund investments are subject to market risks — past performance isn't a guarantee of future returns\n"
+    "• Your messages are processed securely to power this chat\n\n"
+    f"📄  Terms: {TERMS_URL}\n"
+    f"🔒  Privacy: {PRIVACY_URL}\n\n"
+    "Tap a button below to continue 👇"
 )
 
 _WELCOME_HINGLISH = (
-    "Hey! 👋 *FundsIndia* mein aapka swagat hai — India ka trusted investment platform.\n\n"
-    "Main *Finn* hoon, aapka personal AI investment assistant 🤖✨\n\n"
-    "Main aapko financial goals plan karne, mutual funds samajhne, "
-    "aur humare *SEBI-registered advisors* se connect karne mein madad karunga."
+    "Hi 👋  *FundsIndia* mein aapka swagat hai.\n\n"
+    "Main *Finn* hoon — aapka personal investment assistant. "
+    "Main goals plan karne, portfolio review karne, SIP step-up ya pause karne, "
+    "mutual-fund doubts clear karne, aur zarurat pade toh SEBI-registered advisor se connect karne mein madad karta hoon.\n\n"
+    "Bataiye kya help chahiye, ya sirf *Hi* likhiye."
 )
 
 _TERMS_HINGLISH = (
-    "📋 *Shuru karne se pehle:*\n\n"
-    "• Main *educational aur informational* guidance deta hoon\n"
-    "• Expert advice ke liye humare *advisors* bas ek tap door hain 🧑‍💼\n"
-    "• Mutual fund investments market risks ke adheen hain\n"
-    "• Past performance = future returns nahi\n\n"
-    "Aapka trust humara sabse bada asset hai 🤝"
+    "*Shuru karne se pehle* — ek quick note:\n\n"
+    "• Main educational aur informational guidance deta hoon; personalised advice ke liye humare human advisors available hain\n"
+    "• Mutual-fund investments market risks ke adheen hain — past returns future ki guarantee nahi dete\n"
+    "• Aapke messages securely process hote hain taaki yeh chat chal sake\n\n"
+    f"📄  Terms: {TERMS_URL}\n"
+    f"🔒  Privacy: {PRIVACY_URL}\n\n"
+    "Neeche button tap karke continue kijiye 👇"
 )
 
 
