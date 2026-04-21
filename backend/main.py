@@ -200,6 +200,9 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
             "action_advisor": "I want to talk to an advisor",
             "action_modify_plan": "I want to modify my investment plan",
             "action_plan_ok": "The plan looks good, thank you!",
+            "action_portfolio": "Show me my portfolio summary",
+            "action_stepup": "I want to step up my SIP",
+            "action_restart_sip": "I want to restart my paused SIPs",
         }
         if message in _BUTTON_MAP:
             message = _BUTTON_MAP[message]

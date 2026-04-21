@@ -36,6 +36,8 @@ _template_cache: dict = {}
 
 TEMPLATE_CONSENT = "fi_consent_v1"
 TEMPLATE_GREETING_MENU = "fi_greeting_menu_v1"
+TEMPLATE_EXISTING_MENU = "fi_existing_menu_v1"
+TEMPLATE_DORMANT_MENU = "fi_dormant_menu_v1"
 TEMPLATE_STOCK_REDIRECT = "fi_stock_redirect_v1"
 TEMPLATE_TTA = "fi_tta_options_v1"
 TEMPLATE_POST_PDF = "fi_post_pdf_v1"
@@ -49,6 +51,16 @@ _TEMPLATE_DEFINITIONS = {
     TEMPLATE_GREETING_MENU: [
         {"title": "🎯 Plan My Goals", "id": "action_goals"},
         {"title": "📚 Learn Investing", "id": "action_learn"},
+        {"title": "💬 Talk to Advisor", "id": "action_advisor"},
+    ],
+    TEMPLATE_EXISTING_MENU: [
+        {"title": "📊 My Portfolio", "id": "action_portfolio"},
+        {"title": "📈 Step-up SIP", "id": "action_stepup"},
+        {"title": "💬 Talk to Advisor", "id": "action_advisor"},
+    ],
+    TEMPLATE_DORMANT_MENU: [
+        {"title": "▶️ Restart SIPs", "id": "action_restart_sip"},
+        {"title": "📊 My Portfolio", "id": "action_portfolio"},
         {"title": "💬 Talk to Advisor", "id": "action_advisor"},
     ],
     TEMPLATE_STOCK_REDIRECT: [
