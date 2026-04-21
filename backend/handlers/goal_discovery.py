@@ -188,7 +188,11 @@ async def handle_goal_discovery(
         result = json.loads(raw)
     except json.JSONDecodeError:
         logger.error("Failed to parse goal extraction: %s", raw)
-        return "I'd love to help you plan! 🎯 Could you tell me what you're saving for? (e.g., retirement, child's education, or a wealth target)"
+        fallbacks = {
+            "hinglish": "Main aapki help karne ke liye ready hoon! 🎯 Bataiye aap kis goal ke liye save kar rahe hain — retirement, bacche ki padhai, ya kuch aur?",
+            "hi": "मैं आपकी मदद करने को तैयार हूँ! 🎯 बताइए आप किस goal के लिए save कर रहे हैं — retirement, बच्चे की पढ़ाई, या कुछ और?",
+        }
+        return fallbacks.get(language, "I'd love to help you plan! 🎯 What are you saving for — retirement, a child's education, or a wealth target?")
 
     # Update collected state
     new_collected = result.get("collected", {})
@@ -368,8 +372,105 @@ def _infer_risk(collected: dict, known_user: dict | None) -> str:
     return "moderate"
 
 
+# Localised labels for plan-summary output. Keep keys stable across languages.
+_T = {
+    "en": {
+        "mod_prefix": "✅ *Done! Here's your updated plan:*\n\n",
+        "plan_heading": "🎯 *Your {goal} Plan*",
+        "target": "📊 Target",
+        "inflation_adj": "(inflation-adjusted)",
+        "timeline": "⏰ Timeline",
+        "years": "years",
+        "risk_profile": "🛡️ Risk Profile",
+        "expected_return": "📈 Expected Return",
+        "per_year": "year",
+        "lumpsum_kickstart": "💼 *Lumpsum kickstart:* {amt} today grows to ~{fv} in {n} years",
+        "set_forget": "💰 *Set-and-Forget Strategy*\n\nInvest *{sip}/month* for {n} years",
+        "step_up": "🚀 *Step-Up Strategy*\n\nStart with *{base}/month*\nIncrease by {rate}% every year",
+        "no_sip_needed": "✨ Your lumpsum alone covers this goal at the assumed return — no monthly SIP needed. A small SIP still adds a helpful cushion.",
+        "milestone_head": "🌱 *Start small, grow big*",
+        "milestone_body": "First milestone: {amt} in just {n} years with only {sip}/month",
+        "projection_heading": "📈 *How your money could grow*",
+        "projection_summary": "📊 {principal} → ~{fv} in {n} years",
+        "principal_fallback": "your investment",
+        "projection_lumpsum": "💼 Lumpsum: {amt} → *{fv}*",
+        "projection_sip": "💰 SIP: {amt}/mo for {n} years → *{fv}*",
+        "projection_total": "✨ *Total estimated corpus:* {fv}",
+        "portfolio": "📂 *Your Portfolio*",
+        "lumpsum_split": "📂 *How to split your lumpsum*",
+        "no_funds": "_No fund split available for this amount._",
+        "per_month_short": "/mo",
+        "once": "once",
+        "disclaimer": "⚠️ _Mutual fund investments are subject to market risks. This is an indicative plan, not a guarantee of returns. Our SEBI-registered advisors can help personalise it._",
+    },
+    "hinglish": {
+        "mod_prefix": "✅ *Done! Aapka updated plan ready hai:*\n\n",
+        "plan_heading": "🎯 *Aapka {goal} Plan*",
+        "target": "📊 Target",
+        "inflation_adj": "(inflation-adjusted)",
+        "timeline": "⏰ Timeline",
+        "years": "saal",
+        "risk_profile": "🛡️ Risk Profile",
+        "expected_return": "📈 Expected Return",
+        "per_year": "saal",
+        "lumpsum_kickstart": "💼 *Lumpsum kickstart:* {amt} aaj {n} saal mein ~{fv} ban jaata hai",
+        "set_forget": "💰 *Set-and-Forget Strategy*\n\n{n} saal ke liye *{sip}/month* invest kariye",
+        "step_up": "🚀 *Step-Up Strategy*\n\n*{base}/month* se shuru kariye\nHar saal {rate}% badhaiye",
+        "no_sip_needed": "✨ Aapka lumpsum hi kaafi hai is goal ke liye — monthly SIP zaruri nahi. Thoda SIP rakhenge toh cushion mil jayega.",
+        "milestone_head": "🌱 *Chhote steps, badi manzil*",
+        "milestone_body": "Pehla milestone: sirf {sip}/month se {n} saal mein {amt}",
+        "projection_heading": "📈 *Aapka paisa aise grow karega*",
+        "projection_summary": "📊 {principal} → ~{fv} in {n} saal",
+        "principal_fallback": "aapka investment",
+        "projection_lumpsum": "💼 Lumpsum: {amt} → *{fv}*",
+        "projection_sip": "💰 SIP: {amt}/mo, {n} saal → *{fv}*",
+        "projection_total": "✨ *Kul estimated corpus:* {fv}",
+        "portfolio": "📂 *Aapka Portfolio*",
+        "lumpsum_split": "📂 *Lumpsum kaise split kare*",
+        "no_funds": "_Is amount ke liye fund split available nahi hai._",
+        "per_month_short": "/mo",
+        "once": "ek baar",
+        "disclaimer": "⚠️ _Mutual fund investments market risks ke adheen hain. Yeh indicative plan hai, guaranteed returns nahi. Personalised guidance ke liye SEBI-registered advisor baat kar sakte hain._",
+    },
+    "hi": {
+        "mod_prefix": "✅ *हो गया! आपका updated plan तैयार है:*\n\n",
+        "plan_heading": "🎯 *आपका {goal} Plan*",
+        "target": "📊 Target",
+        "inflation_adj": "(महंगाई-adjusted)",
+        "timeline": "⏰ अवधि",
+        "years": "साल",
+        "risk_profile": "🛡️ Risk Profile",
+        "expected_return": "📈 Expected Return",
+        "per_year": "साल",
+        "lumpsum_kickstart": "💼 *Lumpsum kickstart:* {amt} आज {n} साल में ~{fv} बन जाता है",
+        "set_forget": "💰 *Set-and-Forget Strategy*\n\n{n} साल तक *{sip}/month* invest करें",
+        "step_up": "🚀 *Step-Up Strategy*\n\n*{base}/month* से शुरू करें\nहर साल {rate}% बढ़ाएँ",
+        "no_sip_needed": "✨ अकेले आपका lumpsum ही इस goal के लिए काफ़ी है — monthly SIP ज़रूरी नहीं। थोड़ा SIP रखेंगे तो cushion मिल जाएगा।",
+        "milestone_head": "🌱 *छोटे steps, बड़ी मंज़िल*",
+        "milestone_body": "पहला milestone: सिर्फ़ {sip}/month से {n} साल में {amt}",
+        "projection_heading": "📈 *आपका पैसा ऐसे बढ़ेगा*",
+        "projection_summary": "📊 {principal} → ~{fv} in {n} साल",
+        "principal_fallback": "आपका investment",
+        "projection_lumpsum": "💼 Lumpsum: {amt} → *{fv}*",
+        "projection_sip": "💰 SIP: {amt}/mo, {n} साल → *{fv}*",
+        "projection_total": "✨ *कुल अनुमानित corpus:* {fv}",
+        "portfolio": "📂 *आपका Portfolio*",
+        "lumpsum_split": "📂 *Lumpsum कैसे बाँटें*",
+        "no_funds": "_इस amount के लिए fund split available नहीं है।_",
+        "per_month_short": "/mo",
+        "once": "एक बार",
+        "disclaimer": "⚠️ _Mutual fund investments market risks के अधीन हैं। यह indicative plan है, guaranteed returns नहीं। Personalised guidance के लिए SEBI-registered advisor से बात कर सकते हैं।_",
+    },
+}
+
+
+def _t(language: str) -> dict:
+    return _T.get(language, _T["en"])
+
+
 def _format_plan_summary(plan: dict, language: str, is_modification: bool = False) -> str:
-    """Format plan as WhatsApp-friendly multi-message text."""
+    """Format plan as WhatsApp-friendly multi-message text in the user's language."""
+    t = _t(language)
     mode = plan.get("mode", "target")
     sip = plan["sip_required"]
     fv = plan["future_value"]
@@ -391,62 +492,51 @@ def _format_plan_summary(plan: dict, language: str, is_modification: bool = Fals
             return f"₹{amt/100_000:.1f} L"
         return f"₹{amt:,.0f}"
 
-    mod_prefix = ""
-    if is_modification:
-        mod_prefix = (
-            "✅ *Done! Aapka updated plan ready hai:*\n\n"
-            if language == "hinglish"
-            else "✅ *Done! Here's your updated plan:*\n\n"
-        )
+    mod_prefix = t["mod_prefix"] if is_modification else ""
 
     if mode == "projection":
         sections = _projection_sections(
-            plan, mod_prefix, goal, tenure, risk, lumpsum, lumpsum_fv,
+            plan, mod_prefix, t, goal, tenure, risk, lumpsum, lumpsum_fv,
             user_sip, user_sip_fv, fv, fmt,
         )
     else:
         sections = _target_sections(
-            plan, mod_prefix, goal, tenure, risk, sip, fv, stepup,
+            plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
             milestones, lumpsum, lumpsum_fv, fmt,
         )
 
-    sections.append(_fund_section(plan, fmt))
-    sections.append(_disclaimer_section())
+    sections.append(_fund_section(plan, t, fmt))
+    sections.append(t["disclaimer"])
 
     return "|||".join(sections)
 
 
-def _target_sections(plan, mod_prefix, goal, tenure, risk, sip, fv, stepup,
+def _target_sections(plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
                      milestones, lumpsum, lumpsum_fv, fmt) -> list[str]:
     pv = plan["present_value"]
 
     msg1 = (
         f"{mod_prefix}"
-        f"🎯 *Your {goal} Plan*\n\n"
-        f"📊 Target: {fmt(pv)} → {fmt(fv)} (inflation-adjusted)\n"
-        f"⏰ Timeline: {tenure} years\n"
-        f"🛡️ Risk Profile: {risk}\n"
-        f"📈 Expected Return: {plan['assumptions']['expected_return']}/year"
+        f"{t['plan_heading'].format(goal=goal)}\n\n"
+        f"{t['target']}: {fmt(pv)} → {fmt(fv)} {t['inflation_adj']}\n"
+        f"{t['timeline']}: {tenure} {t['years']}\n"
+        f"{t['risk_profile']}: {risk}\n"
+        f"{t['expected_return']}: {plan['assumptions']['expected_return']}/{t['per_year']}"
     )
 
     lumpsum_line = (
-        f"💼 *Lumpsum kickstart:* {fmt(lumpsum)} today grows to ~{fmt(lumpsum_fv)} in {tenure} years\n\n"
+        t["lumpsum_kickstart"].format(amt=fmt(lumpsum), fv=fmt(lumpsum_fv), n=tenure) + "\n\n"
         if lumpsum > 0 else ""
     )
 
     if sip > 0:
         strategy = (
-            f"💰 *The Set-and-Forget Strategy*\n\n"
-            f"Invest *{fmt(sip)}/month* for {tenure} years\n\n"
-            f"🚀 *The Step-Up Strategy*\n\n"
-            f"Start with *{fmt(stepup['base_sip'])}/month*\n"
-            f"Increase by {stepup['stepup_rate_pct']}% every year"
+            t["set_forget"].format(sip=fmt(sip), n=tenure)
+            + "\n\n"
+            + t["step_up"].format(base=fmt(stepup["base_sip"]), rate=stepup["stepup_rate_pct"])
         )
     else:
-        strategy = (
-            "✨ Your lumpsum alone is enough to cover this goal at the assumed return — "
-            "no monthly SIP required. Consider a small SIP anyway for an extra cushion."
-        )
+        strategy = t["no_sip_needed"]
     msg2 = f"{lumpsum_line}{strategy}"
 
     sections = [msg1, msg2]
@@ -454,47 +544,44 @@ def _target_sections(plan, mod_prefix, goal, tenure, risk, sip, fv, stepup,
     if milestones:
         m1 = milestones[0]
         sections.append(
-            f"🌱 *Start small, grow big!*\n\n"
-            f"Your first milestone: {fmt(m1['target_corpus'])} in just {m1['time_years']} years "
-            f"with only {fmt(m1['sip_required'])}/month"
+            f"{t['milestone_head']}\n\n"
+            + t["milestone_body"].format(amt=fmt(m1["target_corpus"]), n=m1["time_years"], sip=fmt(m1["sip_required"]))
         )
 
     return sections
 
 
-def _projection_sections(plan, mod_prefix, goal, tenure, risk, lumpsum,
+def _projection_sections(plan, mod_prefix, t, goal, tenure, risk, lumpsum,
                          lumpsum_fv, user_sip, user_sip_fv, fv, fmt) -> list[str]:
     principal_parts = []
     if lumpsum > 0:
-        principal_parts.append(f"{fmt(lumpsum)} lumpsum today")
+        principal_parts.append(f"{fmt(lumpsum)} lumpsum")
     if user_sip > 0:
-        principal_parts.append(f"{fmt(user_sip)}/month SIP")
-    principal_line = " + ".join(principal_parts) if principal_parts else "your investment"
+        principal_parts.append(f"{fmt(user_sip)}/mo SIP")
+    principal_line = " + ".join(principal_parts) if principal_parts else t["principal_fallback"]
 
     msg1 = (
         f"{mod_prefix}"
-        f"🎯 *Your {goal} Plan*\n\n"
-        f"📊 {principal_line} → ~{fmt(fv)} in {tenure} years\n"
-        f"⏰ Timeline: {tenure} years\n"
-        f"🛡️ Risk Profile: {risk}\n"
-        f"📈 Expected Return: {plan['assumptions']['expected_return']}/year"
+        f"{t['plan_heading'].format(goal=goal)}\n\n"
+        f"{t['projection_summary'].format(principal=principal_line, fv=fmt(fv), n=tenure)}\n"
+        f"{t['timeline']}: {tenure} {t['years']}\n"
+        f"{t['risk_profile']}: {risk}\n"
+        f"{t['expected_return']}: {plan['assumptions']['expected_return']}/{t['per_year']}"
     )
 
     projection_lines = []
     if lumpsum > 0:
-        projection_lines.append(f"💼 Lumpsum: {fmt(lumpsum)} → *{fmt(lumpsum_fv)}*")
+        projection_lines.append(t["projection_lumpsum"].format(amt=fmt(lumpsum), fv=fmt(lumpsum_fv)))
     if user_sip > 0:
-        projection_lines.append(
-            f"💰 SIP: {fmt(user_sip)}/mo for {tenure} years → *{fmt(user_sip_fv)}*"
-        )
-    projection_lines.append(f"✨ *Total estimated corpus:* {fmt(fv)}")
+        projection_lines.append(t["projection_sip"].format(amt=fmt(user_sip), n=tenure, fv=fmt(user_sip_fv)))
+    projection_lines.append(t["projection_total"].format(fv=fmt(fv)))
 
-    msg2 = "📈 *How your money could grow*\n\n" + "\n".join(projection_lines)
+    msg2 = t["projection_heading"] + "\n\n" + "\n".join(projection_lines)
 
     return [msg1, msg2]
 
 
-def _fund_section(plan: dict, fmt) -> str:
+def _fund_section(plan: dict, t: dict, fmt) -> str:
     funds = plan.get("recommended_funds") or []
     alloc = plan["allocation"]["main"]
     lumpsum = plan.get("lumpsum_amount", 0)
@@ -503,26 +590,18 @@ def _fund_section(plan: dict, fmt) -> str:
     for f in funds[:6]:
         parts = []
         if f.get("monthly_amount", 0) > 0:
-            parts.append(f"{fmt(f['monthly_amount'])}/mo")
+            parts.append(f"{fmt(f['monthly_amount'])}{t['per_month_short']}")
         if f.get("lumpsum_amount", 0) > 0:
-            parts.append(f"{fmt(f['lumpsum_amount'])} once")
+            parts.append(f"{fmt(f['lumpsum_amount'])} {t['once']}")
         amount_text = " + ".join(parts) if parts else "—"
         lines.append(f"• {f['category']}: *{f['name']}* — {amount_text}")
 
-    header = "📂 *Your Portfolio*"
+    header = t["portfolio"]
     if lumpsum > 0 and all(f.get("monthly_amount", 0) == 0 for f in funds):
-        header = "📂 *How to split your lumpsum*"
+        header = t["lumpsum_split"]
 
     return (
         f"{header}\n\n"
         f"Equity {alloc['equity']}% | Debt {alloc['debt']}% | Gold {alloc['gold']}%\n\n"
-        + ("\n".join(lines) if lines else "_No fund split available for this amount._")
-    )
-
-
-def _disclaimer_section() -> str:
-    return (
-        "⚠️ _Mutual fund investments are subject to market risks. "
-        "This is an indicative plan, not guaranteed returns. "
-        "Consult our SEBI-registered advisors before investing._"
+        + ("\n".join(lines) if lines else t["no_funds"])
     )
