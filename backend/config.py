@@ -48,3 +48,51 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def config_status() -> dict:
+    """Return a startup readiness report.
+
+    Keys: 'ok' — feature is configured; 'missing' — optional feature disabled
+    with a one-line reason. Intended to be logged at FastAPI startup so
+    operators see what's wired up without digging through a stack trace on
+    first use.
+    """
+    s = get_settings()
+    report = {"ok": [], "missing": []}
+
+    # Required — if it were missing, Settings() would have raised earlier.
+    report["ok"].append("Anthropic (required)")
+
+    if s.twilio_account_sid and s.twilio_auth_token:
+        report["ok"].append(f"Twilio WhatsApp (from={s.twilio_whatsapp_from})")
+    else:
+        report["missing"].append(
+            "Twilio WhatsApp — outbound messages will fail "
+            "(set TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN)"
+        )
+
+    if s.twilio_api_key_sid and s.twilio_api_key_secret and s.twilio_twiml_app_sid:
+        report["ok"].append("Twilio Voice (browser calling)")
+    else:
+        report["missing"].append(
+            "Twilio Voice — advisor-dashboard calling disabled "
+            "(needs TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_TWIML_APP_SID)"
+        )
+
+    if s.openai_api_key:
+        report["ok"].append("OpenAI (voice STT/TTS)")
+    else:
+        report["missing"].append("OpenAI — voice transcription / TTS disabled")
+
+    if s.media_base_url:
+        report["ok"].append(f"media_base_url={s.media_base_url}")
+    else:
+        report["missing"].append(
+            "MEDIA_BASE_URL not set — PDF / audio URLs will be unreachable externally"
+        )
+
+    report["ok"].append(f"dashboard_base_url={s.dashboard_base_url}")
+    report["ok"].append(f"message_mode={s.message_mode}")
+
+    return report

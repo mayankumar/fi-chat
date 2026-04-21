@@ -79,6 +79,19 @@ def _short_phone(phone: str) -> str:
     return f"...{digits[-4:]}" if len(digits) >= 4 else phone
 
 
+@app.on_event("startup")
+async def _startup_readiness_report() -> None:
+    """Log which optional features are wired up so operators don't hit
+    auth/URL failures at first use without warning."""
+    from backend.config import config_status
+
+    report = config_status()
+    for line in report["ok"]:
+        logger.info("CONFIG OK      — %s", line)
+    for line in report["missing"]:
+        logger.warning("CONFIG MISSING — %s", line)
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
