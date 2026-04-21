@@ -292,44 +292,79 @@ def _cta_text(language: str) -> str:
     return "What's next? Want to talk to one of our expert advisors? 🧑‍💼"
 
 
+# Fallback questions keyed by slot; used only when Haiku returns no next_question.
+_FALLBACK_QUESTIONS = {
+    "goal_type": {
+        "en": "What are you saving for? 🎯\n\n• Retirement 🏖️\n• Child's education 🎓\n• House / car / travel 🏠\n• Wealth creation 💰",
+        "hinglish": "Aap kis goal ke liye invest karna chahte hain? 🎯\n\n• Retirement 🏖️\n• Bacche ki education 🎓\n• Ghar/car/travel 🏠\n• Wealth creation 💰",
+        "hi": "आप किस goal के लिए invest करना चाहते हैं? 🎯\n\n• Retirement 🏖️\n• बच्चे की education 🎓\n• घर / car / travel 🏠\n• Wealth creation 💰",
+    },
+    "child_age": {
+        "en": "Saving for your child's education — that's wonderful! 🎓 How old is your child right now?",
+        "hinglish": "Bacche ki education ke liye — that's wonderful! 🎓 Bachhe ki abhi kitni umar hai?",
+        "hi": "बच्चे की शिक्षा के लिए — बहुत अच्छा! 🎓 बच्चे की अभी कितनी उम्र है?",
+    },
+    "current_age": {
+        "en": "Retirement planning — love that! 🌅 How old are you currently?",
+        "hinglish": "Retirement ki planning — superb! 🌅 Aap abhi kitne saal ke hain?",
+        "hi": "Retirement की planning — बढ़िया! 🌅 आप अभी कितने साल के हैं?",
+    },
+    "tenure_years": {
+        "en": "In how many years would you like to achieve this goal? ⏰",
+        "hinglish": "Kitne saalon mein yeh goal achieve karna chahte hain? ⏰",
+        "hi": "कितने साल में यह goal achieve करना चाहते हैं? ⏰",
+    },
+    "amount": {
+        "en": "How much can you invest? 💸\n\n• Monthly SIP (e.g. ₹10,000/month)\n• Or a one-time lumpsum (e.g. ₹50,000 now)",
+        "hinglish": "Kitna invest kar sakte hain? 💸\n\n• Monthly SIP (e.g. ₹10,000/month)\n• Ya ek saath lumpsum (e.g. ₹50,000 one-time)",
+        "hi": "कितना invest कर सकते हैं? 💸\n\n• Monthly SIP (जैसे ₹10,000/month)\n• या एक साथ lumpsum (जैसे ₹50,000 one-time)",
+    },
+    "ready": {
+        "en": "Got it — let me put your personalised plan together now. 🎯",
+        "hinglish": "Samajh gaya — aapka personalised plan banata hoon abhi. 🎯",
+        "hi": "समझ गया — अभी आपका personalised plan तैयार करता हूँ। 🎯",
+    },
+}
+
+# Consumption target question uses a dynamic label, so templated separately.
+_TARGET_QUESTION = {
+    "en": "Approximately how much would the {label} cost? A rough ballpark is fine. 🏠",
+    "hinglish": "Approximately kitne ka {label} sochenge? Rough idea bhi chalega. 🏠",
+    "hi": "Approximately कितने का {label} सोच रहे हैं? Rough idea भी चलेगा। 🏠",
+}
+
+
+def _fallback(slot: str, language: str) -> str:
+    table = _FALLBACK_QUESTIONS[slot]
+    return table.get(language) or table["en"]
+
+
 def _default_next_question(collected: dict, language: str) -> str:
     """Fallback question if Haiku returns an empty next_question. Keep warmth."""
     goal_type = collected.get("goal_type")
     goal_context = collected.get("goal_context")
 
     if not goal_type:
-        if language == "hinglish":
-            return "Aap kis goal ke liye invest karna chahte hain? 🎯\n\n• Retirement 🏖️\n• Bacche ki education 🎓\n• Ghar/car/travel 🏠\n• Wealth creation 💰"
-        return "What are you saving for? 🎯\n\n• Retirement 🏖️\n• Child's education 🎓\n• House / car / travel 🏠\n• Wealth creation 💰"
+        return _fallback("goal_type", language)
 
     if goal_type == "child_education" and not collected.get("child_age"):
-        if language == "hinglish":
-            return "Bacche ki education ke liye — that's wonderful! 🎓 Bachhe ki abhi kitni umar hai?"
-        return "Saving for your child's education — that's wonderful! 🎓 How old is your child right now?"
+        return _fallback("child_age", language)
 
     if goal_type == "retirement" and not collected.get("current_age"):
-        if language == "hinglish":
-            return "Retirement ki planning — superb! 🌅 Aap abhi kitne saal ke hain?"
-        return "Retirement planning — love that! 🌅 How old are you currently?"
+        return _fallback("current_age", language)
 
     if not collected.get("tenure_years") and not collected.get("child_age") and not collected.get("current_age"):
-        if language == "hinglish":
-            return "Kitne saalon mein yeh goal achieve karna chahte hain? ⏰"
-        return "In how many years would you like to achieve this goal? ⏰"
+        return _fallback("tenure_years", language)
 
-    # For consumption goals, ask target before SIP
     if goal_context == "consumption" and not collected.get("target_amount"):
         label = collected.get("goal_label") or "goal"
-        if language == "hinglish":
-            return f"Approximately kitne ka {label} sochenge? Rough idea bhi chalega. 🏠"
-        return f"Approximately how much would the {label} cost? A rough ballpark is fine. 🏠"
+        template = _TARGET_QUESTION.get(language) or _TARGET_QUESTION["en"]
+        return template.format(label=label)
 
     if not collected.get("sip_amount") and not collected.get("lumpsum_amount") and not collected.get("target_amount"):
-        if language == "hinglish":
-            return "Kitna invest kar sakte hain? 💸\n\n• Monthly SIP (e.g. ₹10,000/month)\n• Ya ek saath lumpsum (e.g. ₹50,000 one-time)"
-        return "How much can you invest? 💸\n\n• Monthly SIP (e.g. ₹10,000/month)\n• Or a one-time lumpsum (e.g. ₹50,000 now)"
+        return _fallback("amount", language)
 
-    return "Let me generate your personalized plan! 🎯"
+    return _fallback("ready", language)
 
 
 def _infer_risk(collected: dict, known_user: dict | None) -> str:
