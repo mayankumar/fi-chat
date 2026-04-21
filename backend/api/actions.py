@@ -167,34 +167,74 @@ async def confirm_action(token: str):
     data["confirmed_at"] = time.time()
     logger.info("Action confirmed: %s action=%s phone=%s", token[:8], data["action"], data["phone"])
 
-    # Build confirmation message for WhatsApp
-    action_labels = {
-        "step_up": "SIP Step-Up",
-        "buy_sip": "New SIP",
-        "pause_sip": "SIP Pause",
-        "download_report": "Report Download",
-    }
-    label = action_labels.get(data["action"], data["action"])
-    fund = data.get("fund_name", "")
-    amount_str = ""
-    if data.get("suggested_amount"):
-        amount_str = f" of ₹{data['suggested_amount']:,}/month"
+    to = data["phone"] if data["phone"].startswith("whatsapp:") else f"whatsapp:{data['phone']}"
 
-    confirmation_msg = (
-        f"✅ *{label} Request Received*\n\n"
-        f"Fund: {fund}\n"
-        f"{('Amount: ' + amount_str.strip() + chr(10)) if amount_str else ''}"
-        f"Our team will process this within 1 business day.\n\n"
-        f"You'll receive a confirmation SMS once done. 🙏"
-    )
+    # download_report is a self-service action: generate the PDF and send it directly.
+    if data["action"] == "download_report":
+        try:
+            await _send_portfolio_report(to, data["phone"])
+        except Exception as exc:
+            logger.exception("Portfolio report delivery failed: %s", exc)
+            return {"status": "confirmed", "action": data["action"], "delivery": "failed"}
+        return {"status": "confirmed", "action": data["action"], "delivery": "sent"}
 
-    # Attempt WhatsApp confirmation (best-effort)
+    # Transaction actions (step_up, buy_sip, pause_sip) go to ops for processing.
+    confirmation_msg = _build_txn_confirmation_msg(data)
     try:
         from backend.services.twilio_sender import TwilioSender
         sender = TwilioSender()
-        to = data["phone"] if data["phone"].startswith("whatsapp:") else f"whatsapp:{data['phone']}"
         await sender.send_text(to=to, text=confirmation_msg)
     except Exception as exc:
         logger.warning("Could not send WhatsApp confirmation: %s", exc)
 
     return {"status": "confirmed", "action": data["action"]}
+
+
+def _build_txn_confirmation_msg(data: dict) -> str:
+    """Build the WhatsApp ack for step_up / buy_sip / pause_sip confirmations."""
+    labels = {"step_up": "SIP Step-Up", "buy_sip": "New SIP", "pause_sip": "SIP Pause"}
+    label = labels.get(data["action"], data["action"])
+    fund = data.get("fund_name") or ""
+    amount_line = ""
+    if data.get("suggested_amount"):
+        amount_line = f"Amount: ₹{data['suggested_amount']:,}/month\n"
+    lines = [f"✅ *{label} request received*", ""]
+    if fund:
+        lines.append(f"Fund: {fund}")
+    if amount_line:
+        lines.append(amount_line.rstrip("\n"))
+    lines.append("")
+    lines.append("Our operations team will process this within 1 business day. You'll get a confirmation SMS once it's done. 🙏")
+    return "\n".join(lines)
+
+
+async def _send_portfolio_report(to: str, phone: str) -> None:
+    """Generate and deliver the portfolio PDF via WhatsApp media."""
+    from backend.pdf.renderer import generate_portfolio_report_pdf, get_pdf_url
+    from backend.services.twilio_sender import TwilioSender
+    import shutil
+    from pathlib import Path
+
+    pdf_path = await generate_portfolio_report_pdf(phone)
+    if not pdf_path:
+        sender = TwilioSender()
+        await sender.send_text(
+            to=to,
+            text="We couldn't find an active portfolio on your registered number. "
+                 "If this looks wrong, reply here and your advisor will check.",
+        )
+        return
+
+    # Copy to the publicly served /static/pdfs directory so Twilio can fetch it.
+    static_dir = Path("backend/static/pdfs")
+    static_dir.mkdir(parents=True, exist_ok=True)
+    static_path = static_dir / Path(pdf_path).name
+    shutil.copy2(pdf_path, static_path)
+
+    media_url = get_pdf_url(pdf_path)
+    sender = TwilioSender()
+    await sender.send_text(
+        to=to,
+        text="Here's your portfolio report 📄\n\nHoldings, returns, SIPs and goal progress — all in one place.",
+        media_url=media_url,
+    )
