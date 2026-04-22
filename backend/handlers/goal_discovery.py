@@ -290,6 +290,7 @@ async def handle_goal_discovery(
         risk_profile=risk,
         child_age=collected.get("child_age"),
         current_age=collected.get("current_age"),
+        goal_context=collected.get("goal_context"),
     )
 
     # Use user's own label (e.g. "Ghar", "Car") if provided; otherwise fall back
@@ -677,10 +678,17 @@ def _target_sections(plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
     user_sip = plan.get("user_sip") or 0
     user_sip_fv = plan.get("user_sip_future_value") or 0
 
+    # When there's meaningful inflation, show PV → FV. Otherwise show the
+    # target once — rendering "₹2.5 Cr → ₹2.5 Cr (inflation-adjusted)" reads
+    # like a bug.
+    target_line = f"{t['target']}: {fmt(pv)}"
+    if fv and pv and round(fv) != round(pv):
+        target_line += f" → {fmt(fv)} {t['inflation_adj']}"
+
     msg1 = (
         f"{mod_prefix}"
         f"{t['plan_heading'].format(goal=goal)}\n\n"
-        f"{t['target']}: {fmt(pv)} → {fmt(fv)} {t['inflation_adj']}\n"
+        f"{target_line}\n"
         f"{t['timeline']}: {tenure} {t['years']}\n"
         f"{t['risk_profile']}: {risk}\n"
         f"{t['expected_return']}: {plan['assumptions']['expected_return']}/{t['per_year']}"

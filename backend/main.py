@@ -272,25 +272,20 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
 
         sender = _get_sender()
 
-        # Goal-plan flow: send all plan blocks (last one carries the PDF as
-        # media), then wait long enough for Twilio to actually fetch and
-        # forward the PDF to WhatsApp before the CTA text goes out. Without
-        # the buffer, WhatsApp delivers the CTA (instant text) *before* the
-        # PDF (slow media), which makes the action button look like it
-        # arrived before the plan document.
+        # Goal-plan flow: queue the PDF FIRST so Twilio's per-recipient FIFO
+        # puts the media message at the head of the queue. Then plan text,
+        # then CTA last. Attaching the PDF to the plan text (previous
+        # approach) let WhatsApp deliver the later CTA text before the PDF
+        # finished uploading — this way the media message is always the
+        # first message Twilio needs to clear.
         if media_url and cta_text and messages:
-            leading = messages[:-1]
-            last = messages[-1]
-            if leading:
-                await sender.send_multi(to=phone, messages=leading, template_name=None)
-                await asyncio.sleep(0.6)
-            await sender.send_text(to=phone, text=last, media_url=media_url)
-            # PDF fetched from ngrok/static takes real time to land on
-            # WhatsApp — give it ~4s before dropping the CTA, otherwise the
-            # CTA message overtakes the media message visually.
-            await asyncio.sleep(4.0)
+            pdf_caption = _pdf_caption_for(language)
+            await sender.send_text(to=phone, text=pdf_caption, media_url=media_url)
+            await asyncio.sleep(0.4)
+            await sender.send_multi(to=phone, messages=messages, template_name=None)
+            await asyncio.sleep(0.6)
             await sender.send_with_buttons(to=phone, body=cta_text, template_name=template_name)
-            logger.info("[%s] PLAN+PDF (attached) + CTA sent", tag)
+            logger.info("[%s] PDF → PLAN → CTA sent", tag)
         elif media_url:
             # Legacy PDF-request flow: single text + media, then TTA nudge.
             await sender.send_text(to=phone, text=messages[0], media_url=media_url)
@@ -421,6 +416,14 @@ async def _process_voice_message(phone: str, audio_url: str) -> None:
     except Exception:
         logger.exception("[%s] VOICE PIPELINE ERROR", tag)
         await _send_text(phone, "Sorry, I had trouble processing your voice message. Please try again 🙏")
+
+
+def _pdf_caption_for(language: str) -> str:
+    """One-line caption for the PDF message that precedes the plan text."""
+    return {
+        "hinglish": "📄 *Yeh raha aapka detailed plan PDF* — save kar lijiye ya advisor ke saath share kijiye 👇",
+        "hi": "📄 *यह रहा आपका detailed plan PDF* — save कर लीजिए या advisor के साथ share कीजिए 👇",
+    }.get(language, "📄 *Here's your detailed plan PDF* — save it or share it with your advisor 👇")
 
 
 def _extract_messages(reply) -> list:

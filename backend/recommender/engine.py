@@ -30,6 +30,7 @@ def generate_plan(
     lumpsum_amount: int = None,
     child_age: int = None,
     current_age: int = None,
+    goal_context: str | None = None,
 ) -> dict:
     """Generate a complete investment plan.
 
@@ -54,6 +55,13 @@ def generate_plan(
             tenure_years = defaults["tenure_years"]
 
     inflation = defaults["inflation"]
+    # Consumption goals (ghar/car/travel/shaadi/education) are real-world
+    # purchases that must track CPI, not nominal wealth targets. The
+    # wealth_creation default is 0% (nominal) — override to 6% when the
+    # caller flagged this as consumption, unless the goal already has its
+    # own inflation (retirement 6%, child_education 8%).
+    if (goal_context or "").lower() == "consumption" and inflation == 0:
+        inflation = 0.06
     months = tenure_years * 12
 
     lumpsum = int(lumpsum_amount) if lumpsum_amount else 0
