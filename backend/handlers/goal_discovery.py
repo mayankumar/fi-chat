@@ -48,6 +48,39 @@ Your job: act like the best RM the user has ever met — friendly, curious, genu
 8. risk_profile: "conservative" | "moderate" | "aggressive".
 9. child_age / current_age: as applicable.
 
+== NUMBER CONVERSION (CRITICAL — DO NOT MISREAD) ==
+Indian numbering uses *lakhs* and *crores*. Always expand these BEFORE you emit the integer:
+- 1 thousand / 1K           = 1000            (4 digits total)
+- 1 lakh / 1L / 1 lac       = 100000          (6 digits, 5 zeros)
+- 1 crore / 1 cr            = 10000000        (8 digits, 7 zeros)
+- 10 crore / 10 cr          = 100000000       (9 digits)
+Examples:
+- "60k SIP"                 → sip_amount = 60000
+- "10 lakh savings"         → lumpsum_amount = 1000000
+- "1.5 cr target"           → target_amount = 15000000       (NOT 150000000 — that would be 15 crore)
+- "2 cr ghar"               → target_amount = 20000000
+Double-check every amount: does the digit count match the label? If not, fix it BEFORE emitting.
+
+== RANGES FOR target_amount ==
+When the user gives a RANGE for target_amount (e.g. "1-2 cr", "50-60 lakh", "₹8-10L"),
+use the MIDPOINT, rounded to a clean number.
+- "1-2 cr"     → 15000000        (midpoint 1.5 cr, NOT 15 cr)
+- "50-60 lakh" → 5500000          (midpoint 55 lakh)
+- "8-10L"      → 900000           (midpoint 9 lakh)
+For sip_amount and lumpsum_amount ranges, keep using the LOWER bound.
+
+== "ONLY" QUALIFIERS (CRITICAL) ==
+If the user mentions savings/lumpsum as context but QUALIFIES the SIP with words like
+"only" / "just" / "hi" / "sirf" / "bas" / "kewal", they are telling you NOT to include
+the lumpsum in the plan. In that case:
+- Extract sip_amount normally
+- Set lumpsum_amount to null (do NOT extract it from the savings mention)
+Examples:
+- "10L savings h lekin mai 60k ka sip hi karunga"   → sip=60000, lumpsum=null
+- "I have 10L but I just want to do 60k SIP"        → sip=60000, lumpsum=null
+- "₹10L bank mein h, sirf 60k SIP karna h"          → sip=60000, lumpsum=null
+Contrast: "10L one-time + 60k monthly" (no qualifier) → sip=60000, lumpsum=1000000.
+
 == HOW TO EXTRACT ==
 - SIP vs lumpsum: "monthly/per month/mahine/SIP" → sip_amount. "one-time/lumpsum/bonus/have X now" → lumpsum_amount.
 - goal_context: ghar/car/travel/shaadi/education → consumption. Retirement/paisa badhana/wealth → accumulation.
@@ -65,11 +98,15 @@ Your job: act like the best RM the user has ever met — friendly, curious, genu
 == RISK ASSESSMENT ==
 - If is_known_user=true: we already know their risk from their profile. DO NOT ask.
 - If the user already volunteered risk comfort in their words: capture it. DO NOT re-ask.
-- Otherwise, ask ONE scenario-based question AFTER gathering goal + tenure + amount. Never use jargon like "risk profile". Examples:
-  - Hinglish: "Ek last sawaal — agar aapka investment 1 saal mein 20% neeche chala jaaye, aap kya karoge? 🤔\n\n(a) Withdraw kar lunga\n(b) Hold karke wait karunga\n(c) Aur invest karunga — sasta hai!"
-  - English: "One last thing — if your investment dropped 20% in a year, what would you do? 🤔\n\n(a) Pull it out\n(b) Hold and wait it out\n(c) Invest more while it's cheap"
-  - Hindi: "एक आख़िरी सवाल — अगर investment 1 साल में 20% गिर जाए, आप क्या करेंगे? 🤔\n\n(a) निकाल लूँगा\n(b) रुककर wait करूँगा\n(c) और invest करूँगा"
-- Map user's answer: (a) → conservative, (b) → moderate, (c) → aggressive.
+- Otherwise, once goal + tenure + amount are collected, the backend will present a 3-button
+  WhatsApp picker with the risk-scenario question. Do NOT type out "(a)/(b)/(c)" options
+  yourself — set next_question to null when risk is the only missing piece, and the handler
+  will show the buttons.
+- When the user replies with a button payload ("risk_withdraw" / "risk_hold" / "risk_more")
+  or a typed equivalent ("a"/"b"/"c", "withdraw"/"hold"/"invest more"), map to:
+  - "risk_withdraw" / "a" / "withdraw"       → conservative
+  - "risk_hold"     / "b" / "hold"           → moderate
+  - "risk_more"     / "c" / "invest more"    → aggressive
 
 == WHEN TO ASK FOR target_amount ==
 - goal_context == "consumption": ASK target — "Approximately kitne ka ghar sochenge?". Mark ready=false until target given or user declines ("pata nahi").
@@ -208,6 +245,13 @@ async def handle_goal_discovery(
     is_modification = result.get("is_modification", False)
 
     if not ready:
+        # Priority 1: if the only missing slot is risk, show the 3-button
+        # scenario picker instead of a typed (a)/(b)/(c) question.
+        if _is_only_risk_missing(collected, is_known_user):
+            return {
+                "messages": [_risk_scenario_text(language)],
+                "template_name": TEMPLATE_RISK_SCENARIO,
+            }
         question = result.get("next_question", "")
         if question:
             return question
@@ -254,6 +298,19 @@ async def handle_goal_discovery(
     flow["current_plan"] = plan
     session["flow_state"] = flow
 
+    # Sanity check: if the SIP we must recommend to hit the target is wildly
+    # higher than the SIP the user said they could do, the target was likely
+    # mis-extracted (e.g. "1-2 cr" → 15 cr). Log loudly so these slip into
+    # metrics instead of slipping past the user.
+    user_sip = plan.get("user_sip") or 0
+    required_sip = plan.get("sip_required") or 0
+    if user_sip and required_sip and required_sip > 4 * user_sip:
+        logger.warning(
+            "SANITY CHECK — required SIP %s is >4x user SIP %s for target %s tenure %s. "
+            "Possible target_amount mis-extraction.",
+            required_sip, user_sip, plan.get("present_value"), plan.get("tenure_years"),
+        )
+
     # Generate text summary
     summary = _format_plan_summary(plan, language, is_modification)
 
@@ -262,11 +319,46 @@ async def handle_goal_discovery(
 
     return {
         "messages": [summary],
-        "pdf_text": _pdf_caption(language) if media_url else None,
         "media_url": media_url,
         "cta_text": _cta_text(language),
         "template_name": TEMPLATE_PLAN_CTA,
     }
+
+
+def _is_only_risk_missing(collected: dict, is_known_user: bool) -> bool:
+    """True when goal / tenure / amount are all in hand and only risk_profile is missing."""
+    if is_known_user:
+        return False  # known profile fills in risk without asking
+    if collected.get("risk_profile"):
+        return False
+    if not collected.get("goal_type"):
+        return False
+    has_timing = bool(collected.get("tenure_years") or collected.get("child_age") or collected.get("current_age"))
+    has_amount = bool(collected.get("sip_amount") or collected.get("lumpsum_amount") or collected.get("target_amount"))
+    if not (has_timing and has_amount):
+        return False
+    # Consumption goals also need a target before we're plan-ready.
+    if collected.get("goal_context") == "consumption" and not collected.get("target_amount"):
+        return False
+    return True
+
+
+def _risk_scenario_text(language: str) -> str:
+    """Short scenario prompt for the risk quick-reply buttons (labels come from the template)."""
+    if language == "hinglish":
+        return (
+            "Ek last sawaal 🤔\n\n"
+            "Agar aapka investment 1 saal mein 20% neeche chala jaaye, aap kya karoge?"
+        )
+    if language == "hi":
+        return (
+            "एक आख़िरी सवाल 🤔\n\n"
+            "अगर आपका investment 1 साल में 20% गिर जाए, आप क्या करेंगे?"
+        )
+    return (
+        "One last thing 🤔\n\n"
+        "If your investment dropped 20% in a year, what would you do?"
+    )
 
 
 async def _render_plan_pdf(plan: dict, phone: str) -> str | None:
@@ -281,14 +373,6 @@ async def _render_plan_pdf(plan: dict, phone: str) -> str | None:
     except Exception as exc:
         logger.warning("Could not mirror PDF to static dir: %s", exc)
     return get_pdf_url(pdf_path)
-
-
-def _pdf_caption(language: str) -> str:
-    if language == "hinglish":
-        return "📄 *Yeh raha aapka detailed plan PDF*\n\nRakhiye ya apne advisor ke saath share kar sakte hain. ✨"
-    if language == "hi":
-        return "📄 *यह रहा आपका detailed plan PDF*\n\nइसे save करें या अपने advisor के साथ share करें। ✨"
-    return "📄 *Here's your detailed plan PDF*\n\nSave it or share it with your advisor. ✨"
 
 
 def _cta_text(language: str) -> str:

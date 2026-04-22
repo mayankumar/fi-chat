@@ -43,6 +43,7 @@ TEMPLATE_TTA = "fi_tta_options_v1"
 TEMPLATE_POST_PDF = "fi_post_pdf_v1"
 TEMPLATE_PLAN_CTA = "fi_plan_cta_v1"
 TEMPLATE_GOAL_TYPE_PICKER = "fi_goal_type_picker_v1"
+TEMPLATE_RISK_SCENARIO = "fi_risk_scenario_v1"
 
 # Templates with >3 items use WhatsApp list-picker (up to 10 items).
 # Keyed by template name -> {"button": str (label to open the list), "items": [...]}
@@ -94,6 +95,11 @@ _TEMPLATE_DEFINITIONS = {
     ],
     TEMPLATE_PLAN_CTA: [
         {"title": "💬 Talk to Advisor", "id": "action_advisor"},
+    ],
+    TEMPLATE_RISK_SCENARIO: [
+        {"title": "Withdraw",    "id": "risk_withdraw"},
+        {"title": "Hold & wait", "id": "risk_hold"},
+        {"title": "Invest more", "id": "risk_more"},
     ],
 }
 

@@ -216,6 +216,11 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
             "goal_education": "I want to plan for my child's education",
             "goal_consumption": "I want to save for a house, car, or big purchase",
             "goal_wealth": "I want to grow my wealth over the long term",
+            # Risk-scenario buttons — map to natural-language answers the
+            # extraction prompt recognises (conservative/moderate/aggressive).
+            "risk_withdraw": "If markets dropped 20% I would withdraw — I prefer safety",
+            "risk_hold":     "If markets dropped 20% I would hold and wait it out",
+            "risk_more":     "If markets dropped 20% I would invest more while it's cheap",
         }
         if message in _BUTTON_MAP:
             message = _BUTTON_MAP[message]
@@ -255,7 +260,6 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
         messages = _extract_messages(reply)
         template_name = reply.get("template_name") if isinstance(reply, dict) else None
         media_url = reply.get("media_url") if isinstance(reply, dict) else None
-        pdf_text = reply.get("pdf_text") if isinstance(reply, dict) else None
         cta_text = reply.get("cta_text") if isinstance(reply, dict) else None
 
         # Log all response blocks
@@ -268,14 +272,19 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
 
         sender = _get_sender()
 
-        # Goal-plan flow: plan summary → PDF attachment → action CTA.
-        if pdf_text and media_url and cta_text:
-            await sender.send_multi(to=phone, messages=messages, template_name=None)
-            await asyncio.sleep(1.0)
-            await sender.send_text(to=phone, text=pdf_text, media_url=media_url)
+        # Goal-plan flow: attach PDF to the last plan block (not a separate
+        # message), then send the CTA last so the action button is the final
+        # thing the user sees.
+        if media_url and cta_text and messages:
+            leading = messages[:-1]
+            last = messages[-1]
+            if leading:
+                await sender.send_multi(to=phone, messages=leading, template_name=None)
+                await asyncio.sleep(0.8)
+            await sender.send_text(to=phone, text=last, media_url=media_url)
             await asyncio.sleep(1.2)
             await sender.send_with_buttons(to=phone, body=cta_text, template_name=template_name)
-            logger.info("[%s] PLAN+PDF+CTA sent", tag)
+            logger.info("[%s] PLAN+PDF (attached) + CTA sent", tag)
         elif media_url:
             # Legacy PDF-request flow: single text + media, then TTA nudge.
             await sender.send_text(to=phone, text=messages[0], media_url=media_url)
