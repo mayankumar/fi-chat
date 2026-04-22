@@ -23,7 +23,11 @@ from backend.data.mock_users import get_user
 from backend.pdf.renderer import generate_pdf, get_pdf_url
 from backend.recommender.engine import generate_plan
 from backend.recommender.constants import SIP_MINIMUM
-from backend.services.twilio_sender import TEMPLATE_PLAN_CTA, TEMPLATE_GOAL_TYPE_PICKER
+from backend.services.twilio_sender import (
+    TEMPLATE_PLAN_CTA,
+    TEMPLATE_GOAL_TYPE_PICKER,
+    TEMPLATE_RISK_SCENARIO,
+)
 
 _STATIC_PDF_DIR = Path("backend/static/pdfs")
 
