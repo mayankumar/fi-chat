@@ -5,6 +5,11 @@ import { useParams } from "next/navigation";
 
 const API = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000").replace(/\/$/, "");
 
+// ngrok's free tier serves a browser-warning interstitial unless this header
+// is present. Without it the dashboard gets HTML back and the browser flags it
+// as a CORS failure.
+const API_HEADERS: Record<string, string> = { "ngrok-skip-browser-warning": "1" };
+
 type ActionType = "step_up" | "buy_sip" | "pause_sip" | "download_report";
 
 interface Sip {
@@ -77,7 +82,7 @@ export default function ActionPage() {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API}/api/actions/${token}`)
+    fetch(`${API}/api/actions/${token}`, { headers: API_HEADERS })
       .then((r) => {
         if (r.status === 410) { setState("expired"); return null; }
         if (!r.ok) throw new Error("Action not found");
@@ -96,7 +101,10 @@ export default function ActionPage() {
   async function confirm() {
     setState("confirming");
     try {
-      const r = await fetch(`${API}/api/actions/${token}/confirm`, { method: "POST" });
+      const r = await fetch(`${API}/api/actions/${token}/confirm`, {
+        method: "POST",
+        headers: API_HEADERS,
+      });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         throw new Error(err.detail ?? "Confirmation failed");
