@@ -348,20 +348,32 @@ def _is_only_risk_missing(collected: dict, is_known_user: bool) -> bool:
 
 
 def _risk_scenario_text(language: str) -> str:
-    """Short scenario prompt for the risk quick-reply buttons (labels come from the template)."""
+    """Scenario prompt + option descriptions shown above the 3 quick-reply buttons."""
     if language == "hinglish":
         return (
             "Ek last sawaal 🤔\n\n"
-            "Agar aapka investment 1 saal mein 20% neeche chala jaaye, aap kya karoge?"
+            "Agar aapka investment 1 saal mein 20% neeche chala jaaye, aap kya karoge?\n\n"
+            "• *Withdraw* — nikaal lunga, safety pehle\n"
+            "• *Hold & wait* — rukunga, market wapas aayega\n"
+            "• *Invest more* — aur daal dunga, sasta hai\n\n"
+            "👇 Neeche se chuniye:"
         )
     if language == "hi":
         return (
             "एक आख़िरी सवाल 🤔\n\n"
-            "अगर आपका investment 1 साल में 20% गिर जाए, आप क्या करेंगे?"
+            "अगर आपका investment 1 साल में 20% गिर जाए, आप क्या करेंगे?\n\n"
+            "• *Withdraw* — निकाल लूँगा, safety पहले\n"
+            "• *Hold & wait* — रुकूँगा, market वापस आएगा\n"
+            "• *Invest more* — और डाल दूँगा, सस्ता है\n\n"
+            "👇 नीचे से चुनिए:"
         )
     return (
         "One last thing 🤔\n\n"
-        "If your investment dropped 20% in a year, what would you do?"
+        "If your investment dropped 20% in a year, what would you do?\n\n"
+        "• *Withdraw* — pull it out, I prefer safety\n"
+        "• *Hold & wait* — ride it out, markets recover\n"
+        "• *Invest more* — buy more while it's cheap\n\n"
+        "👇 Tap one below:"
     )
 
 
@@ -527,6 +539,9 @@ _T = {
         "set_forget": "💰 *Set-and-Forget Strategy*\n\nInvest *{sip}/month* for {n} years",
         "step_up": "🚀 *Step-Up Strategy*\n\nStart with *{base}/month*\nIncrease by {rate}% every year",
         "no_sip_needed": "✨ Your lumpsum alone covers this goal at the assumed return — no monthly SIP needed. A small SIP still adds a helpful cushion.",
+        "user_sip_hits": "💰 *Your plan, your way*\n\nYour *{sip}/month* SIP for {n} years → about *{fv}*\n\nThat covers your {target} target with ~{surplus} in surplus 🎉",
+        "user_sip_close": "💰 *Your plan, your way*\n\nYour *{sip}/month* SIP for {n} years → about *{fv}*\n\nThat gets you to ~{pct}% of your {target} target — very close. An extra *{gap}/month* would fully close the gap.",
+        "user_sip_short": "💰 *Your plan, your way*\n\nYour *{sip}/month* SIP for {n} years → about *{fv}*\n\nYour {target} target needs *{required}/month* at this tenure/return. Options: push the SIP up, stretch the tenure, or ease the target.",
         "milestone_head": "🌱 *Start small, grow big*",
         "milestone_body": "First milestone: {amt} in just {n} years with only {sip}/month",
         "projection_heading": "📈 *How your money could grow*",
@@ -556,6 +571,9 @@ _T = {
         "set_forget": "💰 *Set-and-Forget Strategy*\n\n{n} saal ke liye *{sip}/month* invest kariye",
         "step_up": "🚀 *Step-Up Strategy*\n\n*{base}/month* se shuru kariye\nHar saal {rate}% badhaiye",
         "no_sip_needed": "✨ Aapka lumpsum hi kaafi hai is goal ke liye — monthly SIP zaruri nahi. Thoda SIP rakhenge toh cushion mil jayega.",
+        "user_sip_hits": "💰 *Aapka plan, aapke tarah*\n\nAapka *{sip}/month* SIP {n} saal mein → lagbhag *{fv}*\n\n{target} ke target se ~{surplus} surplus banega 🎉",
+        "user_sip_close": "💰 *Aapka plan, aapke tarah*\n\nAapka *{sip}/month* SIP {n} saal mein → lagbhag *{fv}*\n\nYeh {target} target ka ~{pct}% cover karta hai — bahut close. Extra *{gap}/month* se gap poora ban jaayega.",
+        "user_sip_short": "💰 *Aapka plan, aapke tarah*\n\nAapka *{sip}/month* SIP {n} saal mein → lagbhag *{fv}*\n\n{target} target ke liye is tenure aur return pe *{required}/month* chahiye. Options: SIP badhaiye, tenure extend kariye, ya target thoda halka kariye.",
         "milestone_head": "🌱 *Chhote steps, badi manzil*",
         "milestone_body": "Pehla milestone: sirf {sip}/month se {n} saal mein {amt}",
         "projection_heading": "📈 *Aapka paisa aise grow karega*",
@@ -585,6 +603,9 @@ _T = {
         "set_forget": "💰 *Set-and-Forget Strategy*\n\n{n} साल तक *{sip}/month* invest करें",
         "step_up": "🚀 *Step-Up Strategy*\n\n*{base}/month* से शुरू करें\nहर साल {rate}% बढ़ाएँ",
         "no_sip_needed": "✨ अकेले आपका lumpsum ही इस goal के लिए काफ़ी है — monthly SIP ज़रूरी नहीं। थोड़ा SIP रखेंगे तो cushion मिल जाएगा।",
+        "user_sip_hits": "💰 *आपका plan, आपके हिसाब से*\n\nआपका *{sip}/month* SIP {n} साल में → लगभग *{fv}*\n\nयह {target} target से ~{surplus} surplus देगा 🎉",
+        "user_sip_close": "💰 *आपका plan, आपके हिसाब से*\n\nआपका *{sip}/month* SIP {n} साल में → लगभग *{fv}*\n\nयह {target} target का ~{pct}% cover करता है — बहुत close। Extra *{gap}/month* से gap पूरा हो जाएगा।",
+        "user_sip_short": "💰 *आपका plan, आपके हिसाब से*\n\nआपका *{sip}/month* SIP {n} साल में → लगभग *{fv}*\n\n{target} target के लिए इस tenure और return पर *{required}/month* चाहिए। Options: SIP बढ़ाएँ, tenure बढ़ाएँ, या target थोड़ा कम करें।",
         "milestone_head": "🌱 *छोटे steps, बड़ी मंज़िल*",
         "milestone_body": "पहला milestone: सिर्फ़ {sip}/month से {n} साल में {amt}",
         "projection_heading": "📈 *आपका पैसा ऐसे बढ़ेगा*",
@@ -653,6 +674,8 @@ def _format_plan_summary(plan: dict, language: str, is_modification: bool = Fals
 def _target_sections(plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
                      milestones, lumpsum, lumpsum_fv, fmt) -> list[str]:
     pv = plan["present_value"]
+    user_sip = plan.get("user_sip") or 0
+    user_sip_fv = plan.get("user_sip_future_value") or 0
 
     msg1 = (
         f"{mod_prefix}"
@@ -668,7 +691,39 @@ def _target_sections(plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
         if lumpsum > 0 else ""
     )
 
-    if sip > 0:
+    # When the user volunteered a SIP, the plan's main strategy block is framed
+    # around what THEY can do vs the target — not the math-minimum required SIP
+    # (which, in target mode, is actually the gap-closing top-up).
+    if user_sip > 0:
+        projected_total = user_sip_fv + (lumpsum_fv if lumpsum > 0 else 0)
+        ratio = (projected_total / fv) if fv else 0
+        if ratio >= 1.0:
+            surplus = projected_total - fv
+            strategy = t["user_sip_hits"].format(
+                sip=fmt(user_sip), n=tenure, fv=fmt(projected_total),
+                target=fmt(fv), surplus=fmt(surplus),
+            )
+        elif ratio >= 0.8:
+            # Close to target — show the incremental gap-closing SIP honestly.
+            gap_sip = max(0, (plan.get("sip_required") or 0))
+            strategy = t["user_sip_close"].format(
+                sip=fmt(user_sip), n=tenure, fv=fmt(projected_total),
+                target=fmt(fv), pct=int(ratio * 100), gap=fmt(gap_sip),
+            )
+        else:
+            # Meaningfully short — compute the full required SIP from scratch
+            # (not remaining_fv), so the user sees the true ask.
+            try:
+                from backend.recommender.formulas import sip_required
+                annual_r = plan.get("expected_return") or 0.12
+                required = int(sip_required(fv, annual_r, tenure * 12))
+            except Exception:
+                required = (plan.get("sip_required") or 0) + user_sip
+            strategy = t["user_sip_short"].format(
+                sip=fmt(user_sip), n=tenure, fv=fmt(projected_total),
+                target=fmt(fv), required=fmt(required),
+            )
+    elif sip > 0:
         strategy = (
             t["set_forget"].format(sip=fmt(sip), n=tenure)
             + "\n\n"
@@ -680,7 +735,11 @@ def _target_sections(plan, mod_prefix, t, goal, tenure, risk, sip, fv, stepup,
 
     sections = [msg1, msg2]
 
-    if milestones:
+    # The milestone block is computed from the engine's "gap-closing" math, so
+    # it reads confusingly tiny next to the user's actual SIP framing. Skip it
+    # when the user volunteered a SIP — the strategy block already tells the
+    # right story.
+    if milestones and user_sip == 0:
         m1 = milestones[0]
         sections.append(
             f"{t['milestone_head']}\n\n"

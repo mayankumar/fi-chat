@@ -20,8 +20,14 @@ class Settings(BaseSettings):
     twilio_twiml_app_sid: str = ""
     twilio_voice_number: str = ""  # dedicated voice number for outbound calls (e.g. +91XXXXXXXXXX)
 
-    # Models
-    haiku_model: str = "claude-haiku-4-5-20251001"
+    # Models.
+    # NOTE: `haiku_model` is temporarily pointed at Sonnet per user request
+    # while we iterate on conversational quality (number parsing, extraction,
+    # intent classification). Every call-site that reads `haiku_model`
+    # (intent_classifier, language, goal_discovery extraction, agitation,
+    # session_memory, dashboard brief) will run on Sonnet until we flip this
+    # back to "claude-haiku-4-5-20251001". Override via HAIKU_MODEL env var.
+    haiku_model: str = "claude-sonnet-4-6"
     sonnet_model: str = "claude-sonnet-4-6"
     max_tokens: int = 600
     max_history_messages: int = 20

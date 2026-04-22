@@ -272,17 +272,23 @@ async def _process_message(phone: str, message: str, skip_save: bool = False) ->
 
         sender = _get_sender()
 
-        # Goal-plan flow: attach PDF to the last plan block (not a separate
-        # message), then send the CTA last so the action button is the final
-        # thing the user sees.
+        # Goal-plan flow: send all plan blocks (last one carries the PDF as
+        # media), then wait long enough for Twilio to actually fetch and
+        # forward the PDF to WhatsApp before the CTA text goes out. Without
+        # the buffer, WhatsApp delivers the CTA (instant text) *before* the
+        # PDF (slow media), which makes the action button look like it
+        # arrived before the plan document.
         if media_url and cta_text and messages:
             leading = messages[:-1]
             last = messages[-1]
             if leading:
                 await sender.send_multi(to=phone, messages=leading, template_name=None)
-                await asyncio.sleep(0.8)
+                await asyncio.sleep(0.6)
             await sender.send_text(to=phone, text=last, media_url=media_url)
-            await asyncio.sleep(1.2)
+            # PDF fetched from ngrok/static takes real time to land on
+            # WhatsApp — give it ~4s before dropping the CTA, otherwise the
+            # CTA message overtakes the media message visually.
+            await asyncio.sleep(4.0)
             await sender.send_with_buttons(to=phone, body=cta_text, template_name=template_name)
             logger.info("[%s] PLAN+PDF (attached) + CTA sent", tag)
         elif media_url:
